@@ -29,7 +29,14 @@
     ig: '<rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="17.4" cy="6.6" r="1.1" fill="currentColor"/>',
     web: '<circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M3 12h18M12 3c2.5 2.7 3.8 5.7 3.8 9S14.5 18.3 12 21c-2.5-2.7-3.8-5.7-3.8-9S9.5 5.7 12 3z" fill="none" stroke="currentColor" stroke-width="1.6"/>',
     wa: '<path d="M12 2a10 10 0 0 0-8.5 15.2L2 22l4.9-1.5A10 10 0 1 0 12 2z" fill="currentColor"/>',
-    share: '<circle cx="6" cy="12" r="2.4" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="17" cy="6" r="2.4" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="17" cy="18" r="2.4" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="m8.2 10.9 6.6-3.6M8.2 13.1l6.6 3.6" fill="none" stroke="currentColor" stroke-width="1.6"/>'
+    share: '<circle cx="6" cy="12" r="2.4" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="17" cy="6" r="2.4" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="17" cy="18" r="2.4" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="m8.2 10.9 6.6-3.6M8.2 13.1l6.6 3.6" fill="none" stroke="currentColor" stroke-width="1.6"/>',
+    /* navbar */
+    person: '<circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M4.5 21a7.5 7.5 0 0 1 15 0" fill="none" stroke="currentColor" stroke-width="1.6"/>',
+    badge: '<circle cx="12" cy="9" r="6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M9 14.5 8 22l4-2 4 2-1-7.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>',
+    gains: '<path d="M12 3.2 14.3 9l6.2.3-4.8 3.9 1.6 6-5.3-3.4L6.7 19l1.6-6-4.8-3.9L9.7 9z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>',
+    heart: '<path d="M12 20.3 4.6 13a4.6 4.6 0 0 1 6.5-6.5l.9.9.9-.9A4.6 4.6 0 1 1 19.4 13z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>',
+    hand: '<path d="m11 17 2 2a1 1 0 1 0 3-3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="m14 14 2.5 2.5a1 1 0 1 0 3-3l-3.9-3.9a3 3 0 0 0-4.2 0l-.9.9a1 1 0 1 1-3-3l2.8-2.8a5.8 5.8 0 0 1 7.1-.9l.5.3a2 2 0 0 0 1.4.2L21 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="m21 3 1 11h-2M3 3 2 14l6.5 6.5a1 1 0 1 0 3-3M3 4h8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>',
+    chat: '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>'
   };
   function svg(n, c) { return '<svg class="' + (c || '') + '" viewBox="0 0 24 24" aria-hidden="true">' + ICON[n] + '</svg>'; }
   function h2(title) { return '<h2 class="h2"><span class="orn"></span>' + esc(title) + '</h2>'; }
@@ -40,14 +47,15 @@
 
   /* ---------- step definitions ---------- */
   var STEPS = [
-    { key: 'cover',    dark: true,  cta: null },
-    { key: 'intro',    dark: false, cta: ['Lanjut', 'Continue'] },
-    { key: 'bni',      dark: false, cta: ['Lanjut', 'Continue'] },
-    { key: 'gains',    dark: false, cta: ['Lanjut', 'Continue'] },
-    { key: 'personal', dark: false, cta: ['Lanjut', 'Continue'] },
-    { key: 'refer',    dark: false, cta: ['Lanjut', 'Continue'] },
-    { key: 'connect',  dark: true,  cta: null }
+    { key: 'cover',    dark: true },
+    { key: 'intro',    dark: false, icon: 'person', tab: ['Kenalan', 'About'] },
+    { key: 'bni',      dark: false, icon: 'badge',  tab: ['BNI', 'BNI'] },
+    { key: 'gains',    dark: false, icon: 'gains',  tab: ['GAINS', 'GAINS'] },
+    { key: 'personal', dark: false, icon: 'heart',  tab: ['Personal', 'Personal'] },
+    { key: 'refer',    dark: false, icon: 'hand',   tab: ['Referral', 'Refer'] },
+    { key: 'connect',  dark: true,  icon: 'chat',   tab: ['Kontak', 'Contact'] }
   ];
+  var seen = { 1: true };
 
   var view = {};
 
@@ -153,6 +161,8 @@
       '<p class="p">' + T('Senang berkenalan dengan Anda. Simpan kontak saya, atau sapa langsung lewat WhatsApp.',
         'Good to meet you. Save my details, or say hello on WhatsApp.') + '</p>' +
       '<div class="contact">' + rows + '</div>' +
+      '<button class="nextlink" id="share">' + T('Bagikan kartu ini', 'Share this card') +
+      '<span>' + svg('share') + '</span></button>' +
       '<p class="p" style="font-size:12.5px">' + esc(hero.name || '') + ' &middot; ' + esc((D.bisnis || {}).nama || '') + '</p>' +
       '</div>';
   };
@@ -177,16 +187,28 @@
     if (s.key === 'cover') {
       footer = '<div class="foot plain"><button class="btn" id="next">' +
         T('Mari Berkenalan', "Let's connect") + '</button></div>';
-    } else if (s.key === 'connect') {
-      footer = '<div class="foot">' +
-        '<button class="btn" id="wa">' + svg('wa') + T('WhatsApp Saya', 'WhatsApp Me') + '</button>' +
-        '<button class="skip" id="share">' + T('Bagikan kartu ini', 'Share this card') + '</button></div>';
     } else {
-      footer = '<div class="foot"><button class="btn" id="next">' + T(s.cta[0], s.cta[1]) + '</button>' +
-        '<button class="skip" id="skip">' + T('Langsung ke kontak', 'Skip to contact') + '</button></div>';
+      var tabs = STEPS.map(function (x, i) {
+        if (i === 0) return '';
+        var cls = (i === step ? 'on' : (seen[i] ? 'done' : ''));
+        return '<button data-go="' + i + '" class="' + cls + '"' +
+          (i === step ? ' aria-current="page"' : '') + '>' + svg(x.icon) +
+          '<b>' + esc(T(x.tab[0], x.tab[1])) + '</b></button>';
+      }).join('');
+      footer = '<div class="foot">' +
+        '<button class="btn" id="wa">' + svg('wa') + T('Chat WhatsApp', 'Chat on WhatsApp') + '</button>' +
+        '<nav class="nav" id="nav" aria-label="' + T('Bagian kartu', 'Card sections') + '">' + tabs + '</nav>' +
+        '</div>';
     }
 
-    app.innerHTML = topnav + '<div class="stage" id="stage">' + view[s.key]() + '</div>' +
+    var body = view[s.key]();
+    if (s.key !== 'cover' && step < STEPS.length - 1) {
+      body = body.replace(/<\/div>\s*$/, '<button class="nextlink" id="next">' +
+        T('Lanjut', 'Continue') + '<span>' + esc(T(STEPS[step + 1].tab[0], STEPS[step + 1].tab[1])) +
+        ' &rsaquo;</span></button></div>');
+    }
+
+    app.innerHTML = topnav + '<div class="stage" id="stage">' + body + '</div>' +
       footer + '<div class="modal" id="modal"></div>';
 
     bind();
@@ -196,9 +218,13 @@
     var s = STEPS[step];
     if (el('next')) el('next').addEventListener('click', next);
     if (el('back')) el('back').addEventListener('click', back);
-    if (el('skip')) el('skip').addEventListener('click', function () { go(STEPS.length - 1); });
     if (el('wa')) el('wa').addEventListener('click', waOpen);
     if (el('share')) el('share').addEventListener('click', share);
+    var nv = el('nav');
+    if (nv) nv.addEventListener('click', function (e) {
+      var b = e.target.closest('button'); if (!b) return;
+      go(+b.dataset.go);
+    });
     if (el('lid')) el('lid').addEventListener('click', function () { setLang('id'); });
     if (el('len')) el('len').addEventListener('click', function () { setLang('en'); });
 
@@ -229,6 +255,7 @@
     if (i < 0 || i > STEPS.length - 1) return;
     if (STEPS[i].key !== 'gains') pillar = 0;
     step = i;
+    seen[i] = true;
     render();
     var st = el('stage'); if (st) st.scrollTop = 0;
   }
@@ -295,9 +322,9 @@
     if (navigator.share) navigator.share({ title: title, text: title, url: url }).catch(function () {});
     else if (navigator.clipboard) {
       navigator.clipboard.writeText(url);
-      var b = el('share'); var o = b.textContent;
+      var b = el('share'); var o = b.innerHTML;
       b.textContent = T('Link tersalin', 'Link copied');
-      setTimeout(function () { b.textContent = o; }, 1500);
+      setTimeout(function () { b.innerHTML = o; }, 1500);
     }
   }
 
