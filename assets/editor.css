@@ -1,0 +1,174 @@
+/* Increasink Bio Card, tampilan mode sunting.
+   Semua kelas diawali ed- supaya tidak pernah bentrok dengan gaya kartu. */
+
+/* ---------- strip bawah ---------- */
+.ed-pill,
+.ed-bar{
+  flex:none;background:var(--ink);color:var(--cream);
+  padding-bottom:env(safe-area-inset-bottom);
+  font-family:var(--b);
+}
+.ed-pill{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  width:100%;border:none;cursor:pointer;
+  font-size:10px;letter-spacing:.22em;text-transform:uppercase;
+  padding:13px 0 calc(13px + env(safe-area-inset-bottom));
+}
+.ed-pill:hover{color:var(--gold)}
+.ed-pill svg{width:13px;height:13px}
+
+.ed-bar{display:flex;flex-direction:column;gap:9px;padding:11px 14px}
+.ed-nav{display:flex;align-items:center;gap:6px}
+.ed-cur{
+  flex:1;text-align:center;font-size:10px;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--cream-mu);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.ed-ico{
+  width:28px;height:28px;flex:none;border:1px solid var(--cream-line);background:none;
+  color:var(--cream);font-size:16px;line-height:1;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+}
+.ed-ico:disabled{opacity:.25;cursor:default}
+.ed-acts{display:flex;gap:7px}
+.ed-btn{
+  flex:1;font-family:var(--b);font-size:10px;letter-spacing:.16em;text-transform:uppercase;
+  padding:10px 6px;cursor:pointer;border:1px solid var(--cream-line);
+  background:none;color:var(--cream);transition:.16s;
+}
+.ed-btn:hover{border-color:var(--gold)}
+.ed-btn.primary{background:var(--gold);border-color:var(--gold);color:#0A0A0A;font-weight:600}
+.ed-btn.primary:disabled{opacity:.5;cursor:default}
+.ed-btn.dot::after{content:"";display:inline-block;width:5px;height:5px;border-radius:50%;background:#0A0A0A;margin-left:7px;vertical-align:middle}
+.ed-btn.danger{color:#E8836F;border-color:rgba(232,131,111,.4)}
+
+/* footer kartu disembunyikan saat menyunting, navigasi pindah ke ed-bar */
+.app.editing .foot{display:none}
+
+/* ---------- teks yang bisa disunting ---------- */
+.app.editing [data-e]{
+  outline:1px dashed rgba(176,137,60,.45);outline-offset:3px;
+  border-radius:2px;cursor:text;transition:outline-color .16s;
+}
+.app.dark.editing [data-e]{outline-color:rgba(243,239,227,.32)}
+.app.editing [data-e]:hover{outline-color:var(--gold)}
+.app.editing [data-e]:focus{
+  outline:2px solid var(--gold);outline-offset:3px;
+  background:var(--gold-tint);
+}
+.app.editing [data-e]:empty::before{
+  content:attr(data-ph);opacity:.45;font-style:italic;
+}
+
+/* ---------- item yang bisa digeser ---------- */
+.app.editing [data-arr] > *,
+.app.editing [data-ord] > *{position:relative;touch-action:none}
+.app.editing [data-arr] > .ed-add,
+.app.editing [data-ord] > .ed-add{touch-action:auto}
+
+@keyframes edjiggle{
+  0%{transform:rotate(-.6deg)}
+  50%{transform:rotate(.6deg)}
+  100%{transform:rotate(-.6deg)}
+}
+.app.editing [data-arr] > *:not(.ed-add),
+.app.editing [data-ord] > *:not(.ed-add){
+  animation:edjiggle .28s ease-in-out infinite;
+  animation-delay:calc(var(--i,0) * -.09s);
+}
+@media (prefers-reduced-motion: reduce){
+  .app.editing [data-arr] > *,
+  .app.editing [data-ord] > *{animation:none}
+}
+
+.ed-drag{
+  animation:none !important;pointer-events:none;z-index:20;
+  box-shadow:0 12px 28px rgba(20,16,10,.3);opacity:.95;
+}
+.ed-shift{transition:transform .18s cubic-bezier(.3,.9,.3,1)}
+
+.ed-x{
+  position:absolute;top:-8px;right:-8px;width:19px;height:19px;z-index:6;
+  border:none;border-radius:50%;background:var(--ink);color:#fff;
+  font-size:13px;line-height:1;cursor:pointer;padding:0;
+  display:flex;align-items:center;justify-content:center;
+  animation:none !important;
+}
+.app.dark.editing .ed-x{background:var(--cream);color:var(--ink)}
+.ed-add{
+  font-family:var(--b);font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+  border:1px dashed var(--gold-soft);background:none;color:var(--gold-d);
+  padding:6px 12px;cursor:pointer;animation:none !important;
+}
+.ed-add:hover{border-color:var(--gold);border-style:solid}
+.app.editing ul.list > .ed-add{display:block;margin:10px 0 0 -18px;list-style:none}
+.app.editing .facts > .ed-add{margin-top:10px;width:100%}
+
+/* ---------- lembar (login, urutan, konfirmasi) ---------- */
+.ed-sheet{
+  position:absolute;inset:0;z-index:90;display:flex;align-items:flex-end;
+  background:rgba(10,10,10,.55);backdrop-filter:blur(3px);
+  animation:edfade .18s ease both;
+}
+@keyframes edfade{from{opacity:0}to{opacity:1}}
+.ed-box{
+  width:100%;background:var(--paper);color:var(--ink);
+  padding:22px var(--pad) calc(22px + env(safe-area-inset-bottom));
+  max-height:88%;overflow-y:auto;
+  animation:edup .26s cubic-bezier(.25,.85,.3,1) both;
+}
+@keyframes edup{from{transform:translateY(18px);opacity:.6}to{transform:none;opacity:1}}
+.ed-h{
+  font-family:var(--h);font-weight:600;text-transform:uppercase;
+  font-size:16px;letter-spacing:.09em;margin-bottom:6px;
+}
+.ed-sub{font-size:13px;line-height:1.55;color:var(--mu);margin-bottom:16px}
+.ed-input{
+  width:100%;font-family:var(--b);font-size:15px;padding:12px 13px;
+  border:1px solid var(--line);background:var(--tint);color:var(--ink);
+}
+.ed-input:focus{outline:none;border-color:var(--gold)}
+.ed-err{font-size:12.5px;color:#B3402A;margin-top:9px;display:none}
+.ed-err.show{display:block}
+.ed-row{display:flex;gap:8px;margin-top:16px}
+.ed-row .ed-btn{border-color:var(--line);color:var(--ink)}
+.ed-row .ed-btn.primary{color:#0A0A0A}
+.ed-col{display:flex;flex-direction:column;gap:8px;margin-top:16px}
+.ed-col .ed-btn{border-color:var(--line);color:var(--ink)}
+.ed-col .ed-btn.primary{color:#0A0A0A}
+
+/* ---------- kartu urutan section ---------- */
+.ed-tiles{display:flex;flex-direction:column;gap:8px;margin-top:4px}
+.ed-tile{
+  display:flex;align-items:center;gap:12px;padding:14px 13px;
+  border:1px solid var(--line);background:var(--tint);
+  touch-action:none;position:relative;user-select:none;
+}
+.ed-tile.off{opacity:.42}
+.ed-tile.off .ed-tile-t{text-decoration:line-through}
+.ed-tile-t{flex:1;font-size:14px}
+.ed-grip{
+  flex:none;width:14px;height:10px;
+  background:
+    linear-gradient(var(--dm),var(--dm)) 0 0/100% 2px no-repeat,
+    linear-gradient(var(--dm),var(--dm)) 0 4px/100% 2px no-repeat,
+    linear-gradient(var(--dm),var(--dm)) 0 8px/100% 2px no-repeat;
+}
+.ed-eye{
+  flex:none;width:30px;height:30px;border:1px solid var(--line);background:none;
+  color:var(--mu);cursor:pointer;display:flex;align-items:center;justify-content:center;
+}
+.ed-eye svg{width:16px;height:16px}
+.ed-tiles .ed-tile{animation:none}
+.ed-tiles.ed-live .ed-tile:not(.ed-drag){animation:edjiggle .28s ease-in-out infinite}
+
+/* ---------- pesan singkat ---------- */
+.ed-toast{
+  position:absolute;left:50%;bottom:96px;transform:translateX(-50%);
+  z-index:95;max-width:88%;
+  background:var(--ink);color:var(--cream);
+  font-size:12.5px;line-height:1.5;padding:11px 15px;
+  animation:edup .2s ease both;
+}
+.ed-toast.good{background:#1F4A32}
+.ed-toast.bad{background:#7A2A1C}

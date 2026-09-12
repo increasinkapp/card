@@ -78,6 +78,7 @@ body{
   font-size:clamp(19px,4.6vw,23px);letter-spacing:.09em;color:var(--ink);
   display:flex;align-items:center;gap:11px;margin:10px 0 0;
 }
+.h2t{flex:1;min-width:0}
 .h2::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--gold-soft),transparent)}
 .orn{flex:none;width:9px;height:9px;transform:rotate(45deg);border:1.5px solid var(--gold);background:var(--gold-tint)}
 .h3{font-family:var(--h);font-weight:600;font-size:15px;color:var(--gold-d);letter-spacing:.02em}

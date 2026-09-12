@@ -154,5 +154,9 @@ var DATA = {
     "template_en": "Hi Stephen, I just saw your Bio GAINS and would love to connect.\n\nName: {name}\nBNI Chapter: {chapter}\nBusiness Classification: {class}"
   },
 
-  "sections": ["hero", "bni", "goal", "accomplishment", "interest", "network", "skill", "ministry", "refer", "offrecord", "contact"]
+  "order": {
+    "steps": ["intro", "bni", "gains", "personal", "refer", "connect"],
+    "pillars": ["goal", "accomplishment", "interest", "network", "skill"],
+    "hidden": []
+  }
 };

@@ -8,7 +8,8 @@
   var pillar = 0;    // indeks pilar GAINS di step 4
   var tier = 0;      // indeks tier di step How to Refer Me
 
-  var PILLARS = ['goal', 'accomplishment', 'interest', 'network', 'skill'];
+  var PILL_ALL = ['goal', 'accomplishment', 'interest', 'network', 'skill'];
+  var PILLARS = PILL_ALL.slice();
 
   /* ---------- helpers ---------- */
   function esc(s) {
@@ -22,6 +23,12 @@
   }
   function has(v) { return v != null && String(v).trim() !== ''; }
   function el(id) { return document.getElementById(id); }
+  function editing() { return !!(window.BioCard && window.BioCard.editing); }
+  /* Menempelkan alamat field ke elemen. Di mode baca atribut ini tidak berefek apa pun. */
+  function ed(path, rich) {
+    return path ? ' data-e="' + esc(path) + '"' + (rich ? ' data-rich="1"' : '') : '';
+  }
+  function lp(prefix, base) { return prefix + '.' + base + '_' + lang; }
 
   var ICON = {
     mail: '<path d="M2 5h20v14H2z" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="m2 6 10 7 10-7" fill="none" stroke="currentColor" stroke-width="1.6"/>',
@@ -39,22 +46,54 @@
     chat: '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>'
   };
   function svg(n, c) { return '<svg class="' + (c || '') + '" viewBox="0 0 24 24" aria-hidden="true">' + ICON[n] + '</svg>'; }
-  function h2(title) { return '<h2 class="h2"><span class="orn"></span>' + esc(title) + '</h2>'; }
-  function chips(arr) {
-    if (!arr || !arr.length) return '';
-    return '<div class="chips">' + arr.map(function (c) { return '<span class="chip">' + esc(c) + '</span>'; }).join('') + '</div>';
+  function h2(title, path) {
+    return '<h2 class="h2"><span class="orn"></span><span class="h2t"' + ed(path) + '>' +
+      esc(title) + '</span></h2>';
+  }
+  function chips(arr, path) {
+    arr = arr || [];
+    if (!arr.length && !editing()) return '';
+    return '<div class="chips"' + (path ? ' data-arr="' + esc(path) + '" data-kind="text"' : '') + '>' +
+      arr.map(function (c, i) {
+        return '<span class="chip"' + ed(path ? path + '.' + i : '') + '>' + esc(c) + '</span>';
+      }).join('') + '</div>';
   }
 
   /* ---------- step definitions ---------- */
-  var STEPS = [
-    { key: 'cover',    dark: true },
-    { key: 'intro',    dark: false, icon: 'person', tab: ['Kenalan', 'About'] },
-    { key: 'bni',      dark: false, icon: 'badge',  tab: ['BNI', 'BNI'] },
-    { key: 'gains',    dark: false, icon: 'gains',  tab: ['GAINS', 'GAINS'] },
-    { key: 'personal', dark: false, icon: 'heart',  tab: ['Personal', 'Personal'] },
-    { key: 'refer',    dark: false, icon: 'hand',   tab: ['Referral', 'Refer'] },
-    { key: 'connect',  dark: true,  icon: 'chat',   tab: ['Kontak', 'Contact'] }
-  ];
+  var STEP_DEF = {
+    intro:    { dark: false, icon: 'person', tab: ['Kenalan', 'About'],     label: ['Perkenalan', 'Introduction'] },
+    bni:      { dark: false, icon: 'badge',  tab: ['BNI', 'BNI'],           label: ['Keanggotaan BNI', 'BNI Membership'] },
+    gains:    { dark: false, icon: 'gains',  tab: ['GAINS', 'GAINS'],       label: ['Bio GAINS', 'Bio GAINS'] },
+    personal: { dark: false, icon: 'heart',  tab: ['Personal', 'Personal'], label: ['Di Luar Pekerjaan', 'Beyond Work'] },
+    refer:    { dark: false, icon: 'hand',   tab: ['Referral', 'Refer'],    label: ['Cara Mereferensikan', 'How to Refer'] },
+    connect:  { dark: true,  icon: 'chat',   tab: ['Kontak', 'Contact'],    label: ['Kontak', 'Contact'] }
+  };
+  var STEP_ALL = ['intro', 'bni', 'gains', 'personal', 'refer', 'connect'];
+  var STEPS = [];
+
+  /* Urutan tersimpan di data.order. Key yang belum tercatat di sana ikut di
+     belakang, jadi menambah section baru di engine tidak memecahkan kartu lama. */
+  function resolveOrder(saved, all) {
+    var out = [];
+    (saved || []).forEach(function (k) {
+      if (all.indexOf(k) >= 0 && out.indexOf(k) < 0) out.push(k);
+    });
+    all.forEach(function (k) { if (out.indexOf(k) < 0) out.push(k); });
+    return out;
+  }
+  function buildSteps() {
+    var o = D.order || {}, hidden = o.hidden || [];
+    STEPS = [{ key: 'cover', dark: true }];
+    resolveOrder(o.steps, STEP_ALL).forEach(function (k) {
+      var off = hidden.indexOf(k) >= 0;
+      if (off && !editing()) return;
+      var d = STEP_DEF[k];
+      STEPS.push({ key: k, dark: d.dark, icon: d.icon, tab: d.tab, label: d.label, off: off });
+    });
+  }
+  function buildPillars() {
+    PILLARS = resolveOrder((D.order || {}).pillars, PILL_ALL);
+  }
   var seen = { 1: true };
 
   var view = {};
@@ -66,10 +105,11 @@
       : '<span class="ring-ini">' + esc(hero.initials || '') + '</span>';
     return '<div class="cover">' +
       '<div class="ring">' + inner + '</div>' +
-      '<div class="cover-kicker">' + esc(L(hero, 'connector')) + '</div>' +
-      '<h1 class="cover-name">' + esc(hero.name || '') + '</h1>' +
-      '<p class="cover-role">' + esc(L(hero, 'role')) + '</p>' +
-      (has((D.bni || {}).chapter) ? '<div class="cover-meta">' + esc(D.bni.chapter) + '</div>' : '') +
+      '<div class="cover-kicker"' + ed(lp('hero', 'connector')) + '>' + esc(L(hero, 'connector')) + '</div>' +
+      '<h1 class="cover-name"' + ed('hero.name') + '>' + esc(hero.name || '') + '</h1>' +
+      '<p class="cover-role"' + ed(lp('hero', 'role')) + '>' + esc(L(hero, 'role')) + '</p>' +
+      (has((D.bni || {}).chapter) || editing()
+        ? '<div class="cover-meta"' + ed('bni.chapter') + '>' + esc((D.bni || {}).chapter) + '</div>' : '') +
       '</div>';
   };
 
@@ -80,25 +120,33 @@
       : '<div class="portrait"><span class="portrait-ini">' + esc(hero.initials || '') + '</span></div>';
     return '<div class="step">' +
       '<div class="kicker">' + T('Perkenalan', 'Introduction') + '</div>' + p +
-      '<h2 class="name">' + esc(hero.name || '') + '</h2>' +
-      '<p class="role">' + esc(L(hero, 'role')) + '</p>' +
-      (has(L(hero, 'tagline')) ? '<p class="quote">' + L(hero, 'tagline') + '</p>' : '') +
+      '<h2 class="name"' + ed('hero.name') + '>' + esc(hero.name || '') + '</h2>' +
+      '<p class="role"' + ed(lp('hero', 'role')) + '>' + esc(L(hero, 'role')) + '</p>' +
+      (has(L(hero, 'tagline')) || editing()
+        ? '<p class="quote"' + ed(lp('hero', 'tagline'), 1) + '>' + L(hero, 'tagline') + '</p>' : '') +
       '</div>';
   };
 
   view.bni = function () {
     var b = D.bni || {}, biz = D.bisnis || {}, rows = '';
-    function row(k, v) {
-      return has(v) ? '<div class="meta-row"><div class="meta-k">' + esc(k) + '</div><div class="meta-v">' + v + '</div></div>' : '';
+    function row(k, v, path) {
+      if (!has(v) && !editing()) return '';
+      return '<div class="meta-row"><div class="meta-k">' + esc(k) + '</div>' +
+        '<div class="meta-v"' + ed(path) + '>' + v + '</div></div>';
     }
-    rows += row('Chapter', esc(b.chapter));
-    rows += row(T('Klasifikasi', 'Classification'), esc(L(b, 'klasifikasi')));
-    rows += row(T('Peran', 'Role'), esc(L(b, 'peran')));
-    rows += row(T('Anggota Sejak', 'Member Since'), esc(L(b, 'since')));
-    rows += row(T('Bisnis', 'Business'), esc(biz.nama) + (has(biz.sejak) ? ' <span style="color:var(--dm)">est. ' + esc(biz.sejak) + '</span>' : ''));
+    rows += row('Chapter', esc(b.chapter), 'bni.chapter');
+    rows += row(T('Klasifikasi', 'Classification'), esc(L(b, 'klasifikasi')), lp('bni', 'klasifikasi'));
+    rows += row(T('Peran', 'Role'), esc(L(b, 'peran')), lp('bni', 'peran'));
+    rows += row(T('Anggota Sejak', 'Member Since'), esc(L(b, 'since')), lp('bni', 'since'));
+    rows += row(T('Bisnis', 'Business'),
+      '<span' + ed('bisnis.nama') + '>' + esc(biz.nama) + '</span>' +
+      (has(biz.sejak) || editing()
+        ? ' <span style="color:var(--dm)">est. <span' + ed('bisnis.sejak') + '>' + esc(biz.sejak) + '</span></span>' : ''),
+      '');
     return '<div class="step"><div class="kicker">BNI</div>' + h2(T('Keanggotaan', 'Membership')) +
-      '<div class="meta">' + rows + '</div>' + chips(b.status) +
-      (has(L(biz, 'layanan')) ? '<p class="p">' + L(biz, 'layanan') + '</p>' : '') +
+      '<div class="meta">' + rows + '</div>' + chips(b.status, 'bni.status') +
+      (has(L(biz, 'layanan')) || editing()
+        ? '<p class="p"' + ed(lp('bisnis', 'layanan'), 1) + '>' + L(biz, 'layanan') + '</p>' : '') +
       '</div>';
   };
 
@@ -108,28 +156,34 @@
       var letter = ((D.gains || {})[k] || {}).letter || k.charAt(0).toUpperCase();
       return '<button data-pil="' + i + '" class="' + (i === pillar ? 'on' : '') + '" aria-label="' + esc(k) + '">' + esc(letter) + '</button>';
     }).join('');
-    var items = (g.items || []).map(function (it) { return '<li>' + (it[lang] || it.id || it.en || '') + '</li>'; }).join('');
+    var ipath = 'gains.' + key + '.items';
+    var items = (g.items || []).map(function (it, i) {
+      return '<li' + ed(ipath + '.' + i + '.' + lang, 1) + '>' + (it[lang] || it.id || it.en || '') + '</li>';
+    }).join('');
     var dots = PILLARS.map(function (_, i) { return '<i class="' + (i === pillar ? 'on' : '') + '"></i>'; }).join('');
     return '<div class="step"><div class="kicker">Bio GAINS</div>' +
-      '<div class="pillnav" id="pillnav">' + nav + '</div>' +
+      '<div class="pillnav" id="pillnav" data-ord="pillars">' + nav + '</div>' +
       '<div class="pillar">' +
       '<div class="pillar-mark" aria-hidden="true">' + esc(g.letter || '') + '</div>' +
-      h2(L(g, 'title')) +
-      (has(L(g, 'body')) ? '<p class="p">' + L(g, 'body') + '</p>' : '') +
-      (items ? '<ul class="list">' + items + '</ul>' : '') +
-      chips(g.chips) +
+      h2(L(g, 'title'), lp('gains.' + key, 'title')) +
+      (has(L(g, 'body')) || editing()
+        ? '<p class="p"' + ed(lp('gains.' + key, 'body'), 1) + '>' + L(g, 'body') + '</p>' : '') +
+      (items || (editing() && g.items)
+        ? '<ul class="list" data-arr="' + ipath + '" data-kind="ml">' + items + '</ul>' : '') +
+      chips(g.chips, 'gains.' + key + '.chips') +
       '</div><div class="dots">' + dots + '</div></div>';
   };
 
   view.personal = function () {
     var m = D.ministry || {}, o = D.offrecord || {};
-    var facts = (o.facts || []).map(function (f) {
-      return '<div class="fact"><div class="fact-n">' + esc(f.n) + '</div><div class="fact-t">' + (f[lang] || f.id || f.en || '') + '</div></div>';
+    var facts = (o.facts || []).map(function (f, i) {
+      return '<div class="fact"><div class="fact-n"' + ed('offrecord.facts.' + i + '.n') + '>' + esc(f.n) + '</div>' +
+        '<div class="fact-t"' + ed('offrecord.facts.' + i + '.' + lang, 1) + '>' + (f[lang] || f.id || f.en || '') + '</div></div>';
     }).join('');
     return '<div class="step"><div class="kicker">' + T('Di Luar Pekerjaan', 'Beyond Work') + '</div>' +
-      h2(L(m, 'title')) + chips(m.chips) +
-      '<div style="height:26px"></div>' + h2(L(o, 'title')) +
-      '<div class="facts">' + facts + '</div></div>';
+      h2(L(m, 'title'), lp('ministry', 'title')) + chips(m.chips, 'ministry.chips') +
+      '<div style="height:26px"></div>' + h2(L(o, 'title'), lp('offrecord', 'title')) +
+      '<div class="facts" data-arr="offrecord.facts" data-kind="fact">' + facts + '</div></div>';
   };
 
   view.refer = function () {
@@ -137,25 +191,30 @@
     var nav = (r.tiers || []).map(function (x, i) {
       return '<button data-tier="' + i + '" class="' + (i === tier ? 'on' : '') + '" style="--tc:' + esc(x.color || '#B0893C') + '">' + esc(x.name) + '</button>';
     }).join('');
-    return '<div class="step"><div class="kicker">Referral</div>' + h2(L(r, 'title')) +
-      (has(L(r, 'intro')) ? '<p class="p">' + esc(L(r, 'intro')) + '</p>' : '') +
-      '<div class="tiernav" id="tiernav">' + nav + '</div>' +
+    var tp = 'refer.tiers.' + tier;
+    return '<div class="step"><div class="kicker">Referral</div>' + h2(L(r, 'title'), lp('refer', 'title')) +
+      (has(L(r, 'intro')) || editing()
+        ? '<p class="p"' + ed(lp('refer', 'intro')) + '>' + esc(L(r, 'intro')) + '</p>' : '') +
+      '<div class="tiernav" id="tiernav" data-arr="refer.tiers" data-kind="fixed">' + nav + '</div>' +
       '<div class="tierview" style="--tc:' + esc(t.color || '#B0893C') + '">' +
-      '<div class="tier-name">' + esc(t.name || '') + '</div>' +
-      '<div class="tier-lvl">' + esc(L(t, 'level')) + '</div>' +
-      '<p class="tier-body">' + esc(L(t, 'body')) + '</p></div></div>';
+      '<div class="tier-name"' + ed(tp + '.name') + '>' + esc(t.name || '') + '</div>' +
+      '<div class="tier-lvl"' + ed(lp(tp, 'level')) + '>' + esc(L(t, 'level')) + '</div>' +
+      '<p class="tier-body"' + ed(lp(tp, 'body')) + '>' + esc(L(t, 'body')) + '</p></div></div>';
   };
 
   view.connect = function () {
     var c = D.contact || {}, hero = D.hero || {}, rows = '';
-    function link(href, icon, text) {
+    function link(href, icon, text, path, prefix) {
       return '<a href="' + esc(href) + '" target="_blank" rel="noopener">' + svg(icon, 'ic') +
-        '<span class="tx">' + esc(text) + '</span><span class="ar">&rsaquo;</span></a>';
+        '<span class="tx"' + ed(path) + (prefix ? ' data-prefix="' + prefix + '"' : '') + '>' +
+        esc(text) + '</span><span class="ar">&rsaquo;</span></a>';
     }
-    if (has(c.email)) rows += link('mailto:' + c.email, 'mail', c.email);
-    if (has(c.phone_display)) rows += link('tel:' + String(c.phone_display).replace(/\s/g, ''), 'phone', c.phone_display);
-    if (has(c.ig)) rows += link('https://instagram.com/' + c.ig, 'ig', '@' + c.ig);
-    if (has(c.web)) rows += link('https://' + String(c.web).replace(/^https?:\/\//, ''), 'web', c.web);
+    if (has(c.email) || editing()) rows += link('mailto:' + c.email, 'mail', c.email, 'contact.email');
+    if (has(c.phone_display) || editing()) rows += link('tel:' + String(c.phone_display || '').replace(/\s/g, ''), 'phone', c.phone_display, 'contact.phone_display');
+    if (has(c.ig) || editing()) rows += link('https://instagram.com/' + c.ig, 'ig', '@' + c.ig, 'contact.ig', '@');
+    if (has(c.web) || editing()) rows += link('https://' + String(c.web || '').replace(/^https?:\/\//, ''), 'web', c.web, 'contact.web');
+    /* Nomor WhatsApp tidak tampil di kartu, tapi harus bisa diperbaiki dari editor. */
+    if (editing()) rows += link('#', 'wa', c.wa || '', 'contact.wa');
     return '<div class="step"><div class="kicker" style="color:var(--gold)">' + T('Terima kasih', 'Thank you') + '</div>' +
       h2("Let's Connect") +
       '<p class="p">' + T('Senang berkenalan dengan Anda. Simpan kontak saya, atau sapa langsung lewat WhatsApp.',
@@ -212,6 +271,9 @@
       footer + '<div class="modal" id="modal"></div>';
 
     bind();
+    (window.BioCard.onRender || []).forEach(function (fn) {
+      try { fn(); } catch (err) { /* editor gagal, kartu tetap tampil */ }
+    });
   }
 
   function bind() {
@@ -262,7 +324,7 @@
   function setLang(l) { if (l !== lang) { lang = l; render(); } }
 
   function swipe(node) {
-    if (!node) return;
+    if (!node || editing()) return;
     var x0 = null, y0 = null;
     node.addEventListener('touchstart', function (e) {
       x0 = e.touches[0].clientX; y0 = e.touches[0].clientY;
@@ -275,6 +337,7 @@
     }, { passive: true });
   }
   document.addEventListener('keydown', function (e) {
+    if (editing()) return;
     if (el('modal') && el('modal').classList.contains('show')) return;
     if (e.key === 'ArrowRight') next();
     if (e.key === 'ArrowLeft') back();
@@ -328,5 +391,32 @@
     }
   }
 
+  /* ---------- pintu untuk layer editor ----------
+     Diisi sebelum render pertama karena render() sudah memanggil onRender. */
+  window.BioCard = {
+    editing: false,
+    onRender: [],
+    data: function () { return D; },
+    lang: function () { return lang; },
+    steps: function () { return STEPS; },
+    stepDef: STEP_DEF,
+    stepAll: STEP_ALL,
+    pillars: function () { return PILLARS; },
+    pillarAll: PILL_ALL,
+    at: function () { return step; },
+    go: go,
+    render: render,
+    /* Dipakai setelah urutan atau visibilitas berubah. */
+    rebuild: function () {
+      buildSteps();
+      buildPillars();
+      if (step > STEPS.length - 1) step = STEPS.length - 1;
+      if (pillar > PILLARS.length - 1) pillar = 0;
+      render();
+    }
+  };
+
+  buildSteps();
+  buildPillars();
   render();
 })();
