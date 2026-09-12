@@ -77,9 +77,11 @@ export default async function handler(req, res) {
   });
 
   if (!put.ok) {
+    const detail = put.body && put.body.message ? ' ' + put.body.message + '.' : '';
     const msg = put.status === 409
       ? 'Kartu sudah berubah di GitHub sejak halaman ini dibuka. Muat ulang dulu.'
-      : 'GitHub menolak perubahan (' + put.status + ').';
+      : 'GitHub menolak perubahan (' + put.status + ').' + detail +
+        ' Target: ' + repo + ' cabang ' + branch + ', berkas ' + path + '.';
     return res.status(502).json({ error: msg });
   }
 
