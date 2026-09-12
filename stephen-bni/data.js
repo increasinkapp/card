@@ -14,7 +14,7 @@ var DATA = {
     "web": "increasink.co.id"
   },
   "hero": {
-    "name": "Test 123",
+    "name": "test 123",
     "initials": "SS",
     "role_id": "Founder & Creative Director, Increasink",
     "role_en": "Founder & Creative Director, Increasink",
