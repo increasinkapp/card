@@ -1,13 +1,11 @@
-/* Bio GAINS data: Stephen Septian (versi BNI). Dibuat lewat editor.html atau diedit tangan. */
+/* Bio GAINS data: stephen-bni. Disunting lewat editor kartu, jangan diformat ulang. */
 var DATA = {
   "id": "stephen-bni",
   "lang_default": "id",
-
   "images": {
     "cover": "img/stephen.png",
     "hero": "img/stephen.png"
   },
-
   "contact": {
     "wa": "62817714647",
     "phone_display": "+62 817 714 647",
@@ -15,18 +13,16 @@ var DATA = {
     "ig": "stephenseptian",
     "web": "increasink.co.id"
   },
-
   "hero": {
-    "name": "Stephen Septian",
+    "name": "Test 123",
     "initials": "SS",
     "role_id": "Founder & Creative Director, Increasink",
     "role_en": "Founder & Creative Director, Increasink",
     "connector_id": "Bio GAINS",
     "connector_en": "Bio GAINS",
-    "tagline_id": "Business, Brand & People: <em>pelajaran dari membangun, menghubungkan, dan menumbuhkan.</em>",
-    "tagline_en": "Business, Brand & People: <em>lessons from building, connecting and growing.</em>"
+    "tagline_id": "Business, Brand & People: \u003cem>pelajaran dari membangun, menghubungkan, dan menumbuhkan.\u003c/em>",
+    "tagline_en": "Business, Brand & People: \u003cem>lessons from building, connecting and growing.\u003c/em>"
   },
-
   "bni": {
     "chapter": "BNI Magnify, Titanium Chapter",
     "klasifikasi_id": "Social Media & Design",
@@ -37,7 +33,6 @@ var DATA = {
     "since_en": "",
     "status": []
   },
-
   "bisnis": {
     "nama": "Increasink",
     "legal": "",
@@ -45,34 +40,53 @@ var DATA = {
     "layanan_id": "Branding dan digital creative agency. Kami bantu bisnis mengomunikasikan value-nya lewat brand strategy, identitas visual, social media, dan storytelling.",
     "layanan_en": "Branding and digital creative agency. We help businesses communicate their value through brand strategy, visual identity, social media, and storytelling."
   },
-
   "gains": {
     "goal": {
       "letter": "G",
       "title_id": "Goal",
       "title_en": "Goal",
-      "body_id": "Membuat brand jadi <strong>tak terlupakan</strong> lewat keunikan dan kekuatan cerita mereka sendiri.",
-      "body_en": "Helping brands become <strong>unforgettable</strong> through their uniqueness and powerful stories."
+      "body_id": "Membuat brand jadi \u003cstrong>tak terlupakan\u003c/strong> lewat keunikan dan kekuatan cerita mereka sendiri.",
+      "body_en": "Helping brands become \u003cstrong>unforgettable\u003c/strong> through their uniqueness and powerful stories."
     },
     "accomplishment": {
       "letter": "A",
       "title_id": "Accomplishment",
       "title_en": "Accomplishment",
       "items": [
-        { "id": "<b>BNI Indonesia National Conference</b>, Committee Design", "en": "<b>BNI Indonesia National Conference</b>, Committee Design" },
-        { "id": "<b>BNI Magnify, Titanium Chapter</b>, Leadership Team", "en": "<b>BNI Magnify, Titanium Chapter</b>, Leadership Team" },
-        { "id": "<b>Dewan Pengurus</b> Perkumpulan Alumni Kanisius Jakarta", "en": "<b>Board Member</b>, Kanisius Jakarta Alumni Association" },
-        { "id": "<b>Digital Team Perduki</b>, Fasilitator GLEAM, CSSK, SKK", "en": "<b>Digital Team Perduki</b>, Facilitator GLEAM, CSSK, SKK" },
-        { "id": "<b>Media Ministry</b> BPK PKK KAJ", "en": "<b>Media Ministry</b> BPK PKK KAJ" }
+        {
+          "id": "\u003cb>BNI Indonesia National Conference\u003c/b>, Committee Design",
+          "en": "\u003cb>BNI Indonesia National Conference\u003c/b>, Committee Design"
+        },
+        {
+          "id": "\u003cb>BNI Magnify, Titanium Chapter\u003c/b>, Leadership Team",
+          "en": "\u003cb>BNI Magnify, Titanium Chapter\u003c/b>, Leadership Team"
+        },
+        {
+          "id": "\u003cb>Dewan Pengurus\u003c/b> Perkumpulan Alumni Kanisius Jakarta",
+          "en": "\u003cb>Board Member\u003c/b>, Kanisius Jakarta Alumni Association"
+        },
+        {
+          "id": "\u003cb>Digital Team Perduki\u003c/b>, Fasilitator GLEAM, CSSK, SKK",
+          "en": "\u003cb>Digital Team Perduki\u003c/b>, Facilitator GLEAM, CSSK, SKK"
+        },
+        {
+          "id": "\u003cb>Media Ministry\u003c/b> BPK PKK KAJ",
+          "en": "\u003cb>Media Ministry\u003c/b> BPK PKK KAJ"
+        }
       ]
     },
     "interest": {
       "letter": "I",
       "title_id": "Interest",
       "title_en": "Interest",
-      "body_id": "Aktif di olahraga <strong>badminton</strong> dan <strong>padel</strong>.",
-      "body_en": "Active in <strong>badminton</strong> and <strong>padel</strong>.",
-      "chips": ["Badminton", "Padel", "Storytelling", "Desain"]
+      "body_id": "Aktif di olahraga \u003cstrong>badminton\u003c/strong> dan \u003cstrong>padel\u003c/strong>.",
+      "body_en": "Active in \u003cstrong>badminton\u003c/strong> and \u003cstrong>padel\u003c/strong>.",
+      "chips": [
+        "Badminton",
+        "Padel",
+        "Storytelling",
+        "Desain"
+      ]
     },
     "network": {
       "letter": "N",
@@ -80,23 +94,30 @@ var DATA = {
       "title_en": "Network",
       "body_id": "Seorang ayah yang diberkati, dengan istri yang luar biasa dan tiga anak yang menggemaskan.",
       "body_en": "A blessed father with a beautiful wife and three lovable kids.",
-      "chips": ["Catholic Church Organization", "Influencer & Public Figure", "Retail", "Founder"]
+      "chips": [
+        "Catholic Church Organization",
+        "Influencer & Public Figure",
+        "Retail",
+        "Founder"
+      ]
     },
     "skill": {
       "letter": "S",
       "title_id": "Skill",
       "title_en": "Skill",
-      "body_id": "<strong>Social Media & Design.</strong> Brand strategy, identitas visual, konten social media, storytelling, dan campaign kreatif.",
-      "body_en": "<strong>Social Media & Design.</strong> Brand strategy, visual identity, social media content, storytelling, and creative campaigns."
+      "body_id": "\u003cstrong>Social Media & Design.\u003c/strong> Brand strategy, identitas visual, konten social media, storytelling, dan campaign kreatif.",
+      "body_en": "\u003cstrong>Social Media & Design.\u003c/strong> Brand strategy, visual identity, social media content, storytelling, and creative campaigns."
     }
   },
-
   "ministry": {
     "title_id": "My Ministry",
     "title_en": "My Ministry",
-    "chips": ["Prodiakon", "BPK PKK KAJ", "Perduki"]
+    "chips": [
+      "Prodiakon",
+      "BPK PKK KAJ",
+      "Perduki"
+    ]
   },
-
   "refer": {
     "title_id": "How to Refer Me",
     "title_en": "How to Refer Me",
@@ -129,34 +150,74 @@ var DATA = {
       }
     ]
   },
-
   "offrecord": {
     "title_id": "Off the Record",
     "title_en": "Off the Record",
     "facts": [
-      { "n": "01", "id": "Kepala tiga, <b>tiga anak</b>.", "en": "In his thirties, <b>three kids</b>." },
-      { "n": "02", "id": "Mantan <b>atlet badminton</b>, lalu banting setir ke DKV, dan berakhir punya agensi.", "en": "A former <b>badminton athlete</b> who switched to visual communication design, and ended up running an agency." },
-      { "n": "03", "id": "Kalau disuruh pilih satu makanan seumur hidup: <b>bakmi</b>.", "en": "One food for life, no hesitation: <b>bakmi</b>." }
+      {
+        "n": "01",
+        "id": "Kepala tiga, \u003cb>tiga anak\u003c/b>.",
+        "en": "In his thirties, \u003cb>three kids\u003c/b>."
+      },
+      {
+        "n": "02",
+        "id": "Mantan \u003cb>atlet badminton\u003c/b>, lalu banting setir ke DKV, dan berakhir punya agensi.",
+        "en": "A former \u003cb>badminton athlete\u003c/b> who switched to visual communication design, and ended up running an agency."
+      },
+      {
+        "n": "03",
+        "id": "Kalau disuruh pilih satu makanan seumur hidup: \u003cb>bakmi\u003c/b>.",
+        "en": "One food for life, no hesitation: \u003cb>bakmi\u003c/b>."
+      }
     ]
   },
-
   "wa_form": {
     "head_id": "Senang bertemu Anda.",
     "head_en": "Nice to meet you.",
     "sub_id": "Isi sebentar, langsung masuk ke WhatsApp saya.",
     "sub_en": "Fill this in and it goes straight to my WhatsApp.",
     "fields": [
-      { "key": "name",    "label_id": "Nama",                  "label_en": "Name",                    "autocomplete": "name", "required": true },
-      { "key": "chapter", "label_id": "BNI Chapter",           "label_en": "BNI Chapter",             "autocomplete": "off",  "required": false },
-      { "key": "class",   "label_id": "Klasifikasi Bisnis",    "label_en": "Business Classification", "autocomplete": "off",  "required": false }
+      {
+        "key": "name",
+        "label_id": "Nama",
+        "label_en": "Name",
+        "autocomplete": "name",
+        "required": true
+      },
+      {
+        "key": "chapter",
+        "label_id": "BNI Chapter",
+        "label_en": "BNI Chapter",
+        "autocomplete": "off",
+        "required": false
+      },
+      {
+        "key": "class",
+        "label_id": "Klasifikasi Bisnis",
+        "label_en": "Business Classification",
+        "autocomplete": "off",
+        "required": false
+      }
     ],
     "template_id": "Halo Pak Stephen, saya baru lihat Bio GAINS Anda dan ingin terhubung.\n\nNama: {name}\nBNI Chapter: {chapter}\nKlasifikasi Bisnis: {class}",
     "template_en": "Hi Stephen, I just saw your Bio GAINS and would love to connect.\n\nName: {name}\nBNI Chapter: {chapter}\nBusiness Classification: {class}"
   },
-
   "order": {
-    "steps": ["intro", "bni", "gains", "personal", "refer", "connect"],
-    "pillars": ["goal", "accomplishment", "interest", "network", "skill"],
+    "steps": [
+      "intro",
+      "bni",
+      "gains",
+      "personal",
+      "refer",
+      "connect"
+    ],
+    "pillars": [
+      "goal",
+      "accomplishment",
+      "interest",
+      "network",
+      "skill"
+    ],
     "hidden": []
   }
 };
