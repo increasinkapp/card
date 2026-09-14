@@ -196,30 +196,31 @@
       '<div class="facts" data-arr="offrecord.facts" data-kind="fact">' + facts + '</div></div>';
   };
 
+  /* Tumpukan 3D cuma ilustrasi. Pilihan tier lewat tombol di bawahnya,
+     karena lapisan 3D terlalu kecil untuk diketuk jari. */
   view.refer = function () {
     var r = D.refer || {}, t = (r.tiers || [])[tier] || {};
     var stack = (r.tiers || []).length;
-    var nav = (r.tiers || []).map(function (x, i) {
-      return '<div class="slab' + (i === tier ? ' on' : '') + '" data-tier="' + i + '" role="button" tabindex="0"' +
-        ' aria-pressed="' + (i === tier) + '" aria-label="' + esc(x.name || '') + '"' +
+    var slabs = (r.tiers || []).map(function (x, i) {
+      return '<div class="slab' + (i === tier ? ' on' : '') + '" data-tier="' + i + '" aria-hidden="true"' +
         ' style="--tc:' + esc(x.color || '#8E8E93') + ';--i:' + (stack - 1 - i) + '">' +
         '<span class="bot"></span><span class="top"></span>' +
-        '<b class="nm"' + ed('refer.tiers.' + i + '.name') + '>' + esc(x.name || '') + '</b></div>';
+        '<b class="nm">' + esc(x.name || '') + '</b></div>';
     }).join('');
-    if (tier < 0) {
-      return '<div class="step">' + h2(L(r, 'title'), lp('refer', 'title')) +
-        (has(L(r, 'intro')) || editing()
-          ? '<p class="p"' + ed(lp('refer', 'intro')) + '>' + esc(L(r, 'intro')) + '</p>' : '') +
-        '<div class="burger" id="tiernav" data-arr="refer.tiers" data-kind="fixed">' +
-        '<div class="scene">' + nav + '</div></div>' +
-        '<p class="pick">' + T('Pilih salah satu lapisan.', 'Tap one of the layers.') + '</p></div>';
-    }
-    var tp = 'refer.tiers.' + tier;
-    return '<div class="step">' + h2(L(r, 'title'), lp('refer', 'title')) +
+    var btns = (r.tiers || []).map(function (x, i) {
+      return '<button data-tier="' + i + '" class="' + (i === tier ? 'on' : '') + '" aria-pressed="' + (i === tier) + '"' +
+        ' style="--tc:' + esc(x.color || '#8E8E93') + '">' + esc(x.name || '') + '</button>';
+    }).join('');
+    var head = '<div class="step">' + h2(L(r, 'title'), lp('refer', 'title')) +
       (has(L(r, 'intro')) || editing()
         ? '<p class="p"' + ed(lp('refer', 'intro')) + '>' + esc(L(r, 'intro')) + '</p>' : '') +
-      '<div class="burger" id="tiernav" data-arr="refer.tiers" data-kind="fixed">' +
-      '<div class="scene">' + nav + '</div></div>' +
+      '<div class="burger" id="burger"><div class="scene' + (tier >= 0 ? ' picked' : '') + '">' + slabs + '</div></div>' +
+      '<div class="tiers" id="tiernav" data-arr="refer.tiers" data-kind="fixed">' + btns + '</div>';
+    if (tier < 0) {
+      return head + '<p class="pick">' + T('Pilih salah satu lapisan.', 'Pick one of the layers.') + '</p></div>';
+    }
+    var tp = 'refer.tiers.' + tier;
+    return head +
       '<div class="tierview" style="--tc:' + esc(t.color || '#B0893C') + '">' +
       '<div class="tier-name"' + ed(tp + '.name') + '>' + esc(t.name || '') + '</div>' +
       '<div class="tier-lvl"' + ed(lp(tp, 'level')) + '>' + esc(L(t, 'level')) + '</div>' +
@@ -327,19 +328,13 @@
       var x = it.querySelector('.acc-x');
       if (x) x.setAttribute('aria-expanded', String(on));
     });
-    var tn = el('tiernav');
-    if (tn) {
-      tn.addEventListener('click', function (e) {
-        var b = e.target.closest('.slab'); if (!b) return;
+    [el('tiernav'), el('burger')].forEach(function (n) {
+      if (n) n.addEventListener('click', function (e) {
+        var b = e.target.closest('[data-tier]'); if (!b) return;
         tier = +b.dataset.tier; render();
       });
-      tn.addEventListener('keydown', function (e) {
-        if (e.key !== 'Enter' && e.key !== ' ') return;
-        var b = e.target.closest('.slab'); if (!b) return;
-        e.preventDefault(); tier = +b.dataset.tier; render();
-      });
-      tilt(tn);
-    }
+    });
+    if (el('burger')) tilt(el('burger'));
 
     if (s.key !== 'cover') swipe(el('stage'));
   }
@@ -384,6 +379,29 @@
     r.addEventListener('animationend', function () { r.remove(); });
   }
 
+  /* Getar ringan di setiap aksi. Android lewat navigator.vibrate. Safari iOS tidak
+     punya API itu, tapi sejak iOS 18 mengetuk <input switch> memberi haptic, jadi
+     dipakai sakelar tersembunyi sebagai jalan belakang. Harus dipanggil dari gestur. */
+  function haptic() {
+    if (navigator.vibrate) { navigator.vibrate(8); return; }
+    // pola yang sama dengan library ios-haptics: sakelar baru tiap kali, dipasang, diklik, dilepas
+    var lb = document.createElement('label');
+    lb.setAttribute('aria-hidden', 'true');
+    lb.style.display = 'none';
+    var inp = document.createElement('input');
+    inp.type = 'checkbox';
+    inp.setAttribute('switch', '');
+    lb.appendChild(inp);
+    document.head.appendChild(lb);
+    lb.click();
+    document.head.removeChild(lb);
+  }
+  document.addEventListener('click', function (e) {
+    var t = e.target;
+    if (!t.closest || t.closest('[contenteditable="true"]')) return;
+    if (t.closest('button, a, [data-tier], .acc-h')) haptic();
+  }, true);
+
   /* Lapisan gradient hidup di body, dipasang sekali supaya geraknya tidak
      terpotong setiap kali step digambar ulang. */
   function mesh() {
@@ -404,7 +422,7 @@
     node.addEventListener('touchend', function (e) {
       if (x0 == null) return;
       var dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0;
-      if (Math.abs(dx) > 56 && Math.abs(dx) > Math.abs(dy) * 1.6) { dx < 0 ? next() : back(); }
+      if (Math.abs(dx) > 56 && Math.abs(dx) > Math.abs(dy) * 1.6) { haptic(); dx < 0 ? next() : back(); }
       x0 = y0 = null;
     }, { passive: true });
   }

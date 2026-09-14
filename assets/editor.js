@@ -389,9 +389,11 @@
      pernah menumpuk listener. */
   var DG = null;   // { box, sel, onDrop, node, sx, sy, pid, live, timer }
 
-  function sortable(box, sel, onDrop) {
+  function sortable(box, sel, onDrop, handle) {
     box.addEventListener('pointerdown', function (e) {
       if (DG || (e.button != null && e.button !== 0)) return;
+      // item besar (pilar GAINS) hanya bisa diseret dari pegangannya, supaya teks tetap bisa disunting
+      if (handle && !e.target.closest(handle)) return;
       var it = e.target.closest(sel);
       if (!it || it.parentNode !== box) return;
       if (e.target.closest('.ed-x, .ed-add, .ed-eye')) return;
@@ -573,7 +575,7 @@
         });
         saveDraft();
         BC.rebuild();
-      });
+      }, '.acc-l');
     }
   }
 

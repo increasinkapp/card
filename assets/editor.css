@@ -14,7 +14,7 @@
   font-size:10px;letter-spacing:.22em;text-transform:uppercase;
   padding:13px 0 calc(13px + env(safe-area-inset-bottom));
 }
-.ed-pill:hover{color:var(--gold)}
+.ed-pill:hover{opacity:.8}
 .ed-pill svg{width:13px;height:13px}
 
 .ed-bar{display:flex;flex-direction:column;gap:9px;padding:11px 14px}
@@ -37,9 +37,9 @@
   background:none;color:var(--cream);transition:.16s;
 }
 .ed-btn:hover{border-color:var(--gold)}
-.ed-btn.primary{background:var(--gold);border-color:var(--gold);color:#0A0A0A;font-weight:600}
+.ed-btn.primary{background:var(--gold);border-color:var(--gold);color:#fff;font-weight:600}
 .ed-btn.primary:disabled{opacity:.5;cursor:default}
-.ed-btn.dot::after{content:"";display:inline-block;width:5px;height:5px;border-radius:50%;background:#0A0A0A;margin-left:7px;vertical-align:middle}
+.ed-btn.dot::after{content:"";display:inline-block;width:5px;height:5px;border-radius:50%;background:#fff;margin-left:7px;vertical-align:middle}
 .ed-btn.danger{color:#E8836F;border-color:rgba(232,131,111,.4)}
 
 /* footer kartu disembunyikan saat menyunting, navigasi pindah ke ed-bar */
@@ -79,6 +79,18 @@
 @media (prefers-reduced-motion: reduce){
   .app.editing [data-arr] > *,
   .app.editing [data-ord] > *{animation:none}
+}
+
+/* Pilar GAINS terlalu besar untuk digoyang dan mengunci scroll.
+   Yang goyang dan jadi pegangan hanya kotak hurufnya. */
+.app.editing .acc > .acc-i{touch-action:auto;animation:none}
+.app.editing .acc-i .acc-l{
+  touch-action:none;cursor:grab;
+  animation:edjiggle .28s ease-in-out infinite;
+  animation-delay:calc(var(--i,0) * -.09s);
+}
+@media (prefers-reduced-motion: reduce){
+  .app.editing .acc-i .acc-l{animation:none}
 }
 
 .ed-drag{
@@ -132,10 +144,10 @@
 .ed-err.show{display:block}
 .ed-row{display:flex;gap:8px;margin-top:16px}
 .ed-row .ed-btn{border-color:var(--line);color:var(--ink)}
-.ed-row .ed-btn.primary{color:#0A0A0A}
+.ed-row .ed-btn.primary{color:#fff}
 .ed-col{display:flex;flex-direction:column;gap:8px;margin-top:16px}
 .ed-col .ed-btn{border-color:var(--line);color:var(--ink)}
-.ed-col .ed-btn.primary{color:#0A0A0A}
+.ed-col .ed-btn.primary{color:#fff}
 
 /* ---------- kartu urutan section ---------- */
 .ed-tiles{display:flex;flex-direction:column;gap:8px;margin-top:4px}
