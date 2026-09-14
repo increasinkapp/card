@@ -2,20 +2,11 @@
    Semua kelas diawali ed- supaya tidak pernah bentrok dengan gaya kartu. */
 
 /* ---------- strip bawah ---------- */
-.ed-pill,
 .ed-bar{
   flex:none;background:var(--ink);color:var(--cream);
   padding-bottom:env(safe-area-inset-bottom);
   font-family:var(--b);
 }
-.ed-pill{
-  display:flex;align-items:center;justify-content:center;gap:8px;
-  width:100%;border:none;cursor:pointer;
-  font-size:10px;letter-spacing:.22em;text-transform:uppercase;
-  padding:13px 0 calc(13px + env(safe-area-inset-bottom));
-}
-.ed-pill:hover{opacity:.8}
-.ed-pill svg{width:13px;height:13px}
 
 .ed-bar{display:flex;flex-direction:column;gap:9px;padding:11px 14px}
 .ed-nav{display:flex;align-items:center;gap:6px}

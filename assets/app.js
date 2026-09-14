@@ -281,7 +281,7 @@
       var av = (D.images || {}).hero;
       footer = '<div class="foot">' +
         '<button class="btn wabtn" id="wa">' + svg('wa') + T('Chat WhatsApp', 'Chat on WhatsApp') +
-        (has(av) ? '<img class="wa-av" src="' + esc(av) + '" alt="">' : '') + '</button>' +
+        (has(av) ? '<span class="wa-av"><img src="' + esc(av) + '" alt=""></span>' : '') + '</button>' +
         '<nav class="nav" id="nav" aria-label="' + T('Bagian kartu', 'Card sections') + '">' + tabs + '</nav>' +
         '</div>';
     }

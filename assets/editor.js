@@ -26,7 +26,6 @@
 
   var EYE_ON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M1.8 12S5.6 5.5 12 5.5 22.2 12 22.2 12 18.4 18.5 12 18.5 1.8 12 1.8 12z"/><circle cx="12" cy="12" r="3.2"/></svg>';
   var EYE_OFF = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 4l16 16M9.9 5.9A9.6 9.6 0 0 1 12 5.5c6.4 0 10.2 6.5 10.2 6.5a18 18 0 0 1-3.5 4.2M6.5 7.8A17.6 17.6 0 0 0 1.8 12S5.6 18.5 12 18.5c1.2 0 2.3-.2 3.3-.6"/></svg>';
-  var PEN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 20h4L20 8l-4-4L4 16z"/></svg>';
 
   /* ================= util ================= */
   function clone(o) { return JSON.parse(JSON.stringify(o)); }
@@ -79,7 +78,7 @@
   /* ================= gerbang tersembunyi ================= */
   var taps = [];
   document.addEventListener('pointerdown', function (e) {
-    if (unlocked) return;
+    if (editing) return;
     var w = window.innerWidth;
     var zone = Math.min(130, w * 0.32);
     if (e.clientX < w - zone || e.clientY > 96) return;
@@ -89,7 +88,7 @@
     var now = Date.now();
     taps = taps.filter(function (t) { return now - t < 1100; });
     taps.push(now);
-    if (taps.length >= 3) { taps = []; openLogin(); }
+    if (taps.length >= 3) { taps = []; unlocked ? enter() : openLogin(); }
   }, true);
 
   /* ================= lembar ================= */
@@ -165,8 +164,7 @@
             lsSet(K_TOK, JSON.stringify({ token: token, exp: x.j.exp }));
             unlocked = true;
             closeSheet();
-            offerDraft();
-            paint();
+            enter();
           }).catch(function () {
             busy = false;
             go.disabled = false;
@@ -177,6 +175,13 @@
         }
       }
     );
+  }
+
+  /* Masuk mode sunting. Tidak ada tombol yang terlihat di kartu, pintunya
+     selalu tap 3 kali di kanan atas. Sesi yang masih berlaku tidak minta login lagi. */
+  function enter() {
+    setEditing(true);
+    offerDraft();
   }
 
   function logout() {
@@ -298,14 +303,6 @@
   }
 
   /* ================= strip bawah ================= */
-  function buildPill() {
-    var b = document.createElement('button');
-    b.className = 'ed-pill';
-    b.innerHTML = PEN + '<span>' + T('Edit kartu', 'Edit card') + '</span>';
-    b.addEventListener('click', function () { setEditing(true); });
-    return b;
-  }
-
   function buildBar() {
     var steps = BC.steps(), i = BC.at(), cur = steps[i] || {};
     var name = cur.key === 'cover' ? T('Cover', 'Cover')
@@ -584,16 +581,12 @@
     var a = app();
     if (!a) return;
     a.classList.toggle('editing', editing && unlocked);
-    var old = a.querySelector('.ed-bar, .ed-pill');
+    var old = a.querySelector('.ed-bar');
     if (old) old.remove();
-    if (!unlocked) return;
-    if (editing) {
-      wireText(a);
-      wireArrays(a);
-      a.appendChild(buildBar());
-    } else {
-      a.appendChild(buildPill());
-    }
+    if (!unlocked || !editing) return;
+    wireText(a);
+    wireArrays(a);
+    a.appendChild(buildBar());
   }
 
   /* ================= penjaga interaksi saat menyunting ================= */
@@ -618,7 +611,6 @@
         else lsSet(K_TOK, null);
       } catch (e) { lsSet(K_TOK, null); }
     }
-    if (unlocked) offerDraft();
     paint();
   })();
 })();

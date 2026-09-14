@@ -192,16 +192,22 @@ body::after{
 
 /* ---------- cover ---------- */
 .cover{
-  height:100%;display:flex;flex-direction:column;justify-content:center;
-  padding:40px var(--pad) 34px;text-align:center;
+  min-height:100%;display:flex;flex-direction:column;justify-content:center;
+  padding:28px var(--pad) 34px;text-align:center;
 }
+/* Kartu foto 1:1 hampir selebar layar, sudut membulat dan berbingkai.
+   Lebarnya dibatasi 52dvh supaya di HP pendek nama dan tombol tetap muat. */
 .ring{
-  width:min(236px,62%);aspect-ratio:3/4;max-height:44dvh;margin:0 auto 30px;position:relative;
+  width:min(100%,52dvh);aspect-ratio:1/1;margin:0 auto 28px;position:relative;
   display:flex;align-items:center;justify-content:center;overflow:hidden;
-  border-radius:28px;background:rgba(255,255,255,.4);border:1px solid rgba(255,255,255,.7);
+  border-radius:32px;background:rgba(255,255,255,.4);border:1px solid rgba(255,255,255,.7);
   box-shadow:0 2px 10px rgba(0,0,0,.06),0 26px 60px rgba(0,0,0,.16);
 }
-.ring-img{width:100%;height:100%;object-fit:cover;object-position:center 14%;position:relative;z-index:1}
+/* Zoom 1.2x: dari atas kepala sampai dada, tangan tidak masuk. */
+.ring-img{
+  width:100%;height:100%;object-fit:cover;object-position:center top;
+  transform:scale(1.2);transform-origin:50% 36%;position:relative;z-index:1;
+}
 .ring-ini{font-family:var(--h);font-weight:600;font-size:58px;color:var(--ink);letter-spacing:-.02em}
 /* eyebrow Apple: besar, bukan huruf kapital semua, tracking positif, diberi gradient warna */
 .cover-kicker{
@@ -574,8 +580,13 @@ body::after{
 @media (prefers-reduced-motion: reduce){.wabtn::before,.wabtn::after{animation:none}}
 .wa-av{
   position:absolute;right:6px;top:50%;transform:translateY(-50%);
-  width:38px;height:38px;border-radius:50%;object-fit:cover;object-position:center 12%;
+  width:38px;height:38px;border-radius:50%;overflow:hidden;
   border:2px solid rgba(255,255,255,.9);box-shadow:0 2px 7px rgba(0,0,0,.3);
+}
+/* crop ke kepala dan bahu */
+.wa-av img{
+  width:100%;height:100%;display:block;object-fit:cover;object-position:center top;
+  transform:scale(1.65);transform-origin:44% 15%;
 }
 .dark .wa-av{border-color:rgba(0,0,0,.6)}
 
