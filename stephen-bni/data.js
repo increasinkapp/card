@@ -157,7 +157,7 @@ var DATA = {
     "facts": [
       {
         "n": "01",
-        "id": "Kepala tiga, \u003cb>tiga anak\u003c/b>.",
+        "id": "Kepala tiga, \u003cb>anak tiga\u003c/b>.",
         "en": "In his thirties, \u003cb>three kids\u003c/b>."
       },
       {
