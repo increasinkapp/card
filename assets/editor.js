@@ -562,13 +562,13 @@
     var pn = root.querySelector('[data-ord="pillars"]');
     if (pn) {
       var o = ensureOrder();
-      Array.prototype.forEach.call(pn.querySelectorAll('button'), function (b, i) {
+      Array.prototype.forEach.call(pn.querySelectorAll('.acc-i'), function (b, i) {
         b.dataset.idx = i;
         b.style.setProperty('--i', i);
       });
-      sortable(pn, 'button', function () {
+      sortable(pn, '.acc-i', function () {
         var cur = BC.pillars();
-        o.pillars = Array.prototype.map.call(pn.querySelectorAll('button'), function (b) {
+        o.pillars = Array.prototype.map.call(pn.querySelectorAll('.acc-i'), function (b) {
           return cur[+b.dataset.idx];
         });
         saveDraft();

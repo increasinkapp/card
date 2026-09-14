@@ -4,7 +4,8 @@ var DATA = {
   "lang_default": "id",
   "images": {
     "cover": "img/stephen.png",
-    "hero": "img/stephen.png"
+    "hero": "img/stephen.png",
+    "bni": "img/bni.png"
   },
   "contact": {
     "wa": "62817714647",

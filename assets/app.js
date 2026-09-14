@@ -5,8 +5,8 @@
   var D = window.DATA || {};
   var lang = D.lang_default || 'id';
   var step = 0;      // indeks step aktif
-  var pillar = 0;    // indeks pilar GAINS di step 4
-  var tier = 0;      // indeks tier di step How to Refer Me
+  var open = {};     // pilar GAINS yang sedang terbuka, dikunci per key
+  var tier = -1;     // indeks tier di step How to Refer Me, -1 berarti belum dipilih
 
   var PILL_ALL = ['goal', 'accomplishment', 'interest', 'network', 'skill'];
   var PILLARS = PILL_ALL.slice();
@@ -38,16 +38,22 @@
     wa: '<path d="M12 2a10 10 0 0 0-8.5 15.2L2 22l4.9-1.5A10 10 0 1 0 12 2z" fill="currentColor"/>',
     share: '<circle cx="6" cy="12" r="2.4" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="17" cy="6" r="2.4" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="17" cy="18" r="2.4" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="m8.2 10.9 6.6-3.6M8.2 13.1l6.6 3.6" fill="none" stroke="currentColor" stroke-width="1.6"/>',
     /* navbar */
-    person: '<circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M4.5 21a7.5 7.5 0 0 1 15 0" fill="none" stroke="currentColor" stroke-width="1.6"/>',
-    badge: '<circle cx="12" cy="9" r="6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M9 14.5 8 22l4-2 4 2-1-7.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>',
-    gains: '<path d="M12 3.2 14.3 9l6.2.3-4.8 3.9 1.6 6-5.3-3.4L6.7 19l1.6-6-4.8-3.9L9.7 9z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>',
-    heart: '<path d="M12 20.3 4.6 13a4.6 4.6 0 0 1 6.5-6.5l.9.9.9-.9A4.6 4.6 0 1 1 19.4 13z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>',
-    hand: '<path d="m11 17 2 2a1 1 0 1 0 3-3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="m14 14 2.5 2.5a1 1 0 1 0 3-3l-3.9-3.9a3 3 0 0 0-4.2 0l-.9.9a1 1 0 1 1-3-3l2.8-2.8a5.8 5.8 0 0 1 7.1-.9l.5.3a2 2 0 0 0 1.4.2L21 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="m21 3 1 11h-2M3 3 2 14l6.5 6.5a1 1 0 1 0 3-3M3 4h8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>',
-    chat: '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>'
+    person: '<path d="M12 12.4a3.9 3.9 0 1 0 0-7.8 3.9 3.9 0 0 0 0 7.8Z" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M4.9 19.9a7.3 7.3 0 0 1 14.2 0" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>',
+    badge: '<path d="M12 14.4a5.5 5.5 0 1 0 0-11 5.5 5.5 0 0 0 0 11Z" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M8.7 13.6 7.6 20.6l4.4-2.3 4.4 2.3-1.1-7" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>',
+    gains: '<path d="M5 19.2v-4.4M12 19.2V8.6M19 19.2V4.8" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/>',
+    heart: '<path d="M12 20.1 4.9 13a4.5 4.5 0 0 1 6.4-6.4l.7.7.7-.7A4.5 4.5 0 0 1 19.1 13Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>',
+    hand: '<path d="M9.2 11.5a3.35 3.35 0 1 0 0-6.7 3.35 3.35 0 0 0 0 6.7Z" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M2.9 19.6a6.3 6.3 0 0 1 12.6 0" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M16.3 5.3a3.35 3.35 0 0 1 0 6.4M17.6 14.3a6.3 6.3 0 0 1 3.5 5.1" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>',
+    chat: '<path d="M20.4 14.3a2.3 2.3 0 0 1-2.3 2.3H8.5L4 20.6V5.9a2.3 2.3 0 0 1 2.3-2.3h11.8a2.3 2.3 0 0 1 2.3 2.3Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>'
   };
   function svg(n, c) { return '<svg class="' + (c || '') + '" viewBox="0 0 24 24" aria-hidden="true">' + ICON[n] + '</svg>'; }
+  /* Step BNI memakai logo aslinya. Abu saat diam, warna penuh saat aktif, diatur di CSS. */
+  function tabIcon(x) {
+    var logo = (D.images || {}).bni;
+    if (x.key === 'bni' && has(logo)) return '<img class="tabimg" src="' + esc(logo) + '" alt="" aria-hidden="true">';
+    return svg(x.icon);
+  }
   function h2(title, path) {
-    return '<h2 class="h2"><span class="orn"></span><span class="h2t"' + ed(path) + '>' +
+    return '<h2 class="h2"><span class="h2t"' + ed(path) + '>' +
       esc(title) + '</span></h2>';
   }
   function chips(arr, path) {
@@ -83,7 +89,7 @@
   }
   function buildSteps() {
     var o = D.order || {}, hidden = o.hidden || [];
-    STEPS = [{ key: 'cover', dark: true }];
+    STEPS = [{ key: 'cover', dark: false }];
     resolveOrder(o.steps, STEP_ALL).forEach(function (k) {
       var off = hidden.indexOf(k) >= 0;
       if (off && !editing()) return;
@@ -119,7 +125,7 @@
       ? '<div class="portrait" style="background-image:url(' + esc(img) + ')"></div>'
       : '<div class="portrait"><span class="portrait-ini">' + esc(hero.initials || '') + '</span></div>';
     return '<div class="step">' +
-      '<div class="kicker">' + T('Perkenalan', 'Introduction') + '</div>' + p +
+      p +
       '<h2 class="name"' + ed('hero.name') + '>' + esc(hero.name || '') + '</h2>' +
       '<p class="role"' + ed(lp('hero', 'role')) + '>' + esc(L(hero, 'role')) + '</p>' +
       (has(L(hero, 'tagline')) || editing()
@@ -143,35 +149,39 @@
       (has(biz.sejak) || editing()
         ? ' <span style="color:var(--dm)">est. <span' + ed('bisnis.sejak') + '>' + esc(biz.sejak) + '</span></span>' : ''),
       '');
-    return '<div class="step"><div class="kicker">BNI</div>' + h2(T('Keanggotaan', 'Membership')) +
+    return '<div class="step">' + h2(T('Keanggotaan', 'Membership')) +
       '<div class="meta">' + rows + '</div>' + chips(b.status, 'bni.status') +
       (has(L(biz, 'layanan')) || editing()
         ? '<p class="p"' + ed(lp('bisnis', 'layanan'), 1) + '>' + L(biz, 'layanan') + '</p>' : '') +
       '</div>';
   };
 
+  /* Lima pilar tampil sekaligus, isinya dibuka tutup lewat tombol plus. */
   view.gains = function () {
-    var key = PILLARS[pillar], g = (D.gains || {})[key] || {};
-    var nav = PILLARS.map(function (k, i) {
-      var letter = ((D.gains || {})[k] || {}).letter || k.charAt(0).toUpperCase();
-      return '<button data-pil="' + i + '" class="' + (i === pillar ? 'on' : '') + '" aria-label="' + esc(k) + '">' + esc(letter) + '</button>';
+    var rows = PILLARS.map(function (key, i) {
+      var g = (D.gains || {})[key] || {};
+      var ipath = 'gains.' + key + '.items';
+      var items = (g.items || []).map(function (it, j) {
+        return '<li' + ed(ipath + '.' + j + '.' + lang, 1) + '>' + (it[lang] || it.id || it.en || '') + '</li>';
+      }).join('');
+      var on = !!open[key];
+      return '<div class="acc-i' + (on ? ' on' : '') + '" data-pil="' + esc(key) + '">' +
+        '<div class="acc-h">' +
+        '<span class="acc-l" aria-hidden="true">' + esc(g.letter || key.charAt(0).toUpperCase()) + '</span>' +
+        '<span class="acc-t"' + ed(lp('gains.' + key, 'title')) + '>' + esc(L(g, 'title')) + '</span>' +
+        '<button class="acc-x" aria-expanded="' + on + '" aria-label="' + esc(L(g, 'title')) + '"></button>' +
+        '</div>' +
+        '<div class="acc-p"><div><div class="acc-in">' +
+        (has(L(g, 'body')) || editing()
+          ? '<p class="p"' + ed(lp('gains.' + key, 'body'), 1) + '>' + L(g, 'body') + '</p>' : '') +
+        (items || (editing() && g.items)
+          ? '<ul class="list" data-arr="' + ipath + '" data-kind="ml">' + items + '</ul>' : '') +
+        chips(g.chips, 'gains.' + key + '.chips') +
+        '</div></div></div></div>';
     }).join('');
-    var ipath = 'gains.' + key + '.items';
-    var items = (g.items || []).map(function (it, i) {
-      return '<li' + ed(ipath + '.' + i + '.' + lang, 1) + '>' + (it[lang] || it.id || it.en || '') + '</li>';
-    }).join('');
-    var dots = PILLARS.map(function (_, i) { return '<i class="' + (i === pillar ? 'on' : '') + '"></i>'; }).join('');
-    return '<div class="step"><div class="kicker">Bio GAINS</div>' +
-      '<div class="pillnav" id="pillnav" data-ord="pillars">' + nav + '</div>' +
-      '<div class="pillar">' +
-      '<div class="pillar-mark" aria-hidden="true">' + esc(g.letter || '') + '</div>' +
-      h2(L(g, 'title'), lp('gains.' + key, 'title')) +
-      (has(L(g, 'body')) || editing()
-        ? '<p class="p"' + ed(lp('gains.' + key, 'body'), 1) + '>' + L(g, 'body') + '</p>' : '') +
-      (items || (editing() && g.items)
-        ? '<ul class="list" data-arr="' + ipath + '" data-kind="ml">' + items + '</ul>' : '') +
-      chips(g.chips, 'gains.' + key + '.chips') +
-      '</div><div class="dots">' + dots + '</div></div>';
+    return '<div class="step">' +
+      h2(T('Profil GAINS', 'GAINS Profile')) +
+      '<div class="acc" id="pillnav" data-ord="pillars">' + rows + '</div></div>';
   };
 
   view.personal = function () {
@@ -180,7 +190,7 @@
       return '<div class="fact"><div class="fact-n"' + ed('offrecord.facts.' + i + '.n') + '>' + esc(f.n) + '</div>' +
         '<div class="fact-t"' + ed('offrecord.facts.' + i + '.' + lang, 1) + '>' + (f[lang] || f.id || f.en || '') + '</div></div>';
     }).join('');
-    return '<div class="step"><div class="kicker">' + T('Di Luar Pekerjaan', 'Beyond Work') + '</div>' +
+    return '<div class="step">' +
       h2(L(m, 'title'), lp('ministry', 'title')) + chips(m.chips, 'ministry.chips') +
       '<div style="height:26px"></div>' + h2(L(o, 'title'), lp('offrecord', 'title')) +
       '<div class="facts" data-arr="offrecord.facts" data-kind="fact">' + facts + '</div></div>';
@@ -188,14 +198,28 @@
 
   view.refer = function () {
     var r = D.refer || {}, t = (r.tiers || [])[tier] || {};
+    var stack = (r.tiers || []).length;
     var nav = (r.tiers || []).map(function (x, i) {
-      return '<button data-tier="' + i + '" class="' + (i === tier ? 'on' : '') + '" style="--tc:' + esc(x.color || '#B0893C') + '">' + esc(x.name) + '</button>';
+      return '<div class="slab' + (i === tier ? ' on' : '') + '" data-tier="' + i + '" role="button" tabindex="0"' +
+        ' aria-pressed="' + (i === tier) + '" aria-label="' + esc(x.name || '') + '"' +
+        ' style="--tc:' + esc(x.color || '#8E8E93') + ';--i:' + (stack - 1 - i) + '">' +
+        '<span class="bot"></span><span class="top"></span>' +
+        '<b class="nm"' + ed('refer.tiers.' + i + '.name') + '>' + esc(x.name || '') + '</b></div>';
     }).join('');
+    if (tier < 0) {
+      return '<div class="step">' + h2(L(r, 'title'), lp('refer', 'title')) +
+        (has(L(r, 'intro')) || editing()
+          ? '<p class="p"' + ed(lp('refer', 'intro')) + '>' + esc(L(r, 'intro')) + '</p>' : '') +
+        '<div class="burger" id="tiernav" data-arr="refer.tiers" data-kind="fixed">' +
+        '<div class="scene">' + nav + '</div></div>' +
+        '<p class="pick">' + T('Pilih salah satu lapisan.', 'Tap one of the layers.') + '</p></div>';
+    }
     var tp = 'refer.tiers.' + tier;
-    return '<div class="step"><div class="kicker">Referral</div>' + h2(L(r, 'title'), lp('refer', 'title')) +
+    return '<div class="step">' + h2(L(r, 'title'), lp('refer', 'title')) +
       (has(L(r, 'intro')) || editing()
         ? '<p class="p"' + ed(lp('refer', 'intro')) + '>' + esc(L(r, 'intro')) + '</p>' : '') +
-      '<div class="tiernav" id="tiernav" data-arr="refer.tiers" data-kind="fixed">' + nav + '</div>' +
+      '<div class="burger" id="tiernav" data-arr="refer.tiers" data-kind="fixed">' +
+      '<div class="scene">' + nav + '</div></div>' +
       '<div class="tierview" style="--tc:' + esc(t.color || '#B0893C') + '">' +
       '<div class="tier-name"' + ed(tp + '.name') + '>' + esc(t.name || '') + '</div>' +
       '<div class="tier-lvl"' + ed(lp(tp, 'level')) + '>' + esc(L(t, 'level')) + '</div>' +
@@ -215,7 +239,7 @@
     if (has(c.web) || editing()) rows += link('https://' + String(c.web || '').replace(/^https?:\/\//, ''), 'web', c.web, 'contact.web');
     /* Nomor WhatsApp tidak tampil di kartu, tapi harus bisa diperbaiki dari editor. */
     if (editing()) rows += link('#', 'wa', c.wa || '', 'contact.wa');
-    return '<div class="step"><div class="kicker" style="color:var(--gold)">' + T('Terima kasih', 'Thank you') + '</div>' +
+    return '<div class="step">' +
       h2("Let's Connect") +
       '<p class="p">' + T('Senang berkenalan dengan Anda. Simpan kontak saya, atau sapa langsung lewat WhatsApp.',
         'Good to meet you. Save my details, or say hello on WhatsApp.') + '</p>' +
@@ -229,8 +253,7 @@
   /* ---------- shell ---------- */
   function render() {
     var s = STEPS[step];
-    var frac = s.key === 'gains' ? pillar / PILLARS.length : 0;
-    var pct = Math.round(((step + frac) / (STEPS.length - 1)) * 100);
+    var pct = Math.round((step / (STEPS.length - 1)) * 100);
     var app = el('app');
     app.className = 'app' + (s.dark ? ' dark' : '');
 
@@ -251,11 +274,13 @@
         if (i === 0) return '';
         var cls = (i === step ? 'on' : (seen[i] ? 'done' : ''));
         return '<button data-go="' + i + '" class="' + cls + '"' +
-          (i === step ? ' aria-current="page"' : '') + '>' + svg(x.icon) +
+          (i === step ? ' aria-current="page"' : '') + '>' + tabIcon(x) +
           '<b>' + esc(T(x.tab[0], x.tab[1])) + '</b></button>';
       }).join('');
+      var av = (D.images || {}).hero;
       footer = '<div class="foot">' +
-        '<button class="btn" id="wa">' + svg('wa') + T('Chat WhatsApp', 'Chat on WhatsApp') + '</button>' +
+        '<button class="btn wabtn" id="wa">' + svg('wa') + T('Chat WhatsApp', 'Chat on WhatsApp') +
+        (has(av) ? '<img class="wa-av" src="' + esc(av) + '" alt="">' : '') + '</button>' +
         '<nav class="nav" id="nav" aria-label="' + T('Bagian kartu', 'Card sections') + '">' + tabs + '</nav>' +
         '</div>';
     }
@@ -292,36 +317,83 @@
 
     var pn = el('pillnav');
     if (pn) pn.addEventListener('click', function (e) {
-      var b = e.target.closest('button'); if (!b) return;
-      pillar = +b.dataset.pil; render();
+      var it = e.target.closest('.acc-i');
+      if (!it || !e.target.closest('.acc-h')) return;
+      /* di mode sunting, ketukan pada teks dipakai untuk mengedit, bukan membuka */
+      if (editing() && !e.target.closest('.acc-x')) return;
+      var k = it.dataset.pil, on = !open[k];
+      open[k] = on;
+      it.classList.toggle('on', on);
+      var x = it.querySelector('.acc-x');
+      if (x) x.setAttribute('aria-expanded', String(on));
     });
     var tn = el('tiernav');
-    if (tn) tn.addEventListener('click', function (e) {
-      var b = e.target.closest('button'); if (!b) return;
-      tier = +b.dataset.tier; render();
-    });
+    if (tn) {
+      tn.addEventListener('click', function (e) {
+        var b = e.target.closest('.slab'); if (!b) return;
+        tier = +b.dataset.tier; render();
+      });
+      tn.addEventListener('keydown', function (e) {
+        if (e.key !== 'Enter' && e.key !== ' ') return;
+        var b = e.target.closest('.slab'); if (!b) return;
+        e.preventDefault(); tier = +b.dataset.tier; render();
+      });
+      tilt(tn);
+    }
 
     if (s.key !== 'cover') swipe(el('stage'));
   }
 
   /* ---------- navigation ---------- */
-  function next() {
-    if (STEPS[step].key === 'gains' && pillar < PILLARS.length - 1) { pillar++; render(); return; }
-    go(step + 1);
-  }
-  function back() {
-    if (STEPS[step].key === 'gains' && pillar > 0) { pillar--; render(); return; }
-    go(step - 1);
-  }
+  function next() { go(step + 1); }
+  function back() { go(step - 1); }
   function go(i) {
     if (i < 0 || i > STEPS.length - 1) return;
-    if (STEPS[i].key !== 'gains') pillar = 0;
     step = i;
     seen[i] = true;
     render();
     var st = el('stage'); if (st) st.scrollTop = 0;
   }
   function setLang(l) { if (l !== lang) { lang = l; render(); } }
+
+  /* Tumpukan burger ikut miring mengikuti jari, lalu kembali ke posisi diam. */
+  function tilt(node) {
+    var sc = node.querySelector('.scene');
+    if (!sc) return;
+    function move(e) {
+      var r = node.getBoundingClientRect();
+      var px = (e.clientX - r.left) / r.width - .5;
+      var py = (e.clientY - r.top) / r.height - .5;
+      sc.style.setProperty('--rx', (58 - py * 16) + 'deg');
+      sc.style.setProperty('--rz', (-16 + px * 26) + 'deg');
+    }
+    function rest() { sc.style.removeProperty('--rx'); sc.style.removeProperty('--rz'); }
+    node.addEventListener('pointermove', move);
+    node.addEventListener('pointerleave', rest);
+    node.addEventListener('pointercancel', rest);
+  }
+
+  /* Riak cahaya di titik sentuh. Murni hiasan, tidak menahan klik apa pun. */
+  function ripple(e) {
+    if (editing()) return;
+    var r = document.createElement('span');
+    r.className = 'ripple';
+    r.style.left = e.clientX + 'px';
+    r.style.top = e.clientY + 'px';
+    document.body.appendChild(r);
+    r.addEventListener('animationend', function () { r.remove(); });
+  }
+
+  /* Lapisan gradient hidup di body, dipasang sekali supaya geraknya tidak
+     terpotong setiap kali step digambar ulang. */
+  function mesh() {
+    if (document.querySelector('.mesh')) return;
+    var m = document.createElement('div');
+    m.className = 'mesh';
+    m.setAttribute('aria-hidden', 'true');
+    m.innerHTML = '<i></i><i></i><i></i>';
+    document.body.insertBefore(m, document.body.firstChild);
+  }
 
   function swipe(node) {
     if (!node || editing()) return;
@@ -411,12 +483,15 @@
       buildSteps();
       buildPillars();
       if (step > STEPS.length - 1) step = STEPS.length - 1;
-      if (pillar > PILLARS.length - 1) pillar = 0;
       render();
     }
   };
 
+  mesh();
+  document.addEventListener('pointerdown', ripple, { passive: true });
+
   buildSteps();
   buildPillars();
+  if (PILLARS.length) open[PILLARS[0]] = true;
   render();
 })();
