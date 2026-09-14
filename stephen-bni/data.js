@@ -15,7 +15,7 @@ var DATA = {
     "web": "increasink.co.id"
   },
   "hero": {
-    "name": "Stephen Septian",
+    "name": "Stephen septian",
     "initials": "SS",
     "role_id": "Founder & Creative Director, Increasink",
     "role_en": "Founder & Creative Director, Increasink",
