@@ -175,3 +175,52 @@
 }
 .ed-toast.good{background:#1F4A32}
 .ed-toast.bad{background:#7A2A1C}
+
+/* ---------- tombol + ala Apple dan menunya ---------- */
+.ed-bar{position:relative}
+.ed-fab{
+  position:absolute;right:16px;bottom:calc(100% + 16px);z-index:30;
+  width:54px;height:54px;border-radius:50%;border:none;cursor:pointer;
+  background:var(--ink);color:#fff;font-family:var(--b);font-size:30px;font-weight:300;line-height:1;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 10px 26px rgba(0,0,0,.28);
+  transition:transform .22s cubic-bezier(.3,.9,.3,1);
+}
+.ed-fab.on{transform:rotate(45deg)}
+.app.dark .ed-fab{background:var(--cream);color:var(--ink)}
+.ed-menu{
+  position:absolute;right:16px;bottom:calc(100% + 80px);z-index:31;
+  min-width:210px;padding:6px;border-radius:16px;color:var(--ink);
+  background:rgba(255,255,255,.86);
+  -webkit-backdrop-filter:saturate(180%) blur(22px);backdrop-filter:saturate(180%) blur(22px);
+  box-shadow:0 18px 44px rgba(0,0,0,.22);
+  transform-origin:bottom right;animation:edpop .2s cubic-bezier(.25,.85,.3,1) both;
+}
+@keyframes edpop{from{opacity:0;transform:scale(.9) translateY(6px)}to{opacity:1;transform:none}}
+.ed-menu button{
+  display:flex;align-items:center;gap:12px;width:100%;padding:12px;border:none;border-radius:10px;
+  background:none;color:var(--ink);font-family:var(--b);font-size:16px;letter-spacing:-.02em;
+  text-align:left;cursor:pointer;
+}
+.ed-menu button:hover{background:rgba(0,0,0,.05)}
+.ed-menu svg{width:20px;height:20px;flex:none}
+
+/* ---------- blok tambahan ---------- */
+/* blok besar tidak digoyang dan tidak mengunci scroll, pegangannya bulatan kiri atas */
+.app.editing .blocks > .blk{touch-action:auto;animation:none}
+.app.editing .blocks > .blk:empty{min-height:40px;border:1px dashed var(--line-s);border-radius:var(--r-s)}
+.ed-grip-h{
+  position:absolute;top:-9px;left:-9px;width:24px;height:24px;z-index:6;border-radius:50%;
+  background:
+    linear-gradient(#fff,#fff) center 8px/10px 1.5px no-repeat,
+    linear-gradient(#fff,#fff) center 11.25px/10px 1.5px no-repeat,
+    linear-gradient(#fff,#fff) center 14.5px/10px 1.5px no-repeat,
+    var(--ink);
+  box-shadow:0 0 0 1.5px rgba(255,255,255,.75);
+  touch-action:none;cursor:grab;
+  animation:edjiggle .28s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce){ .ed-grip-h{animation:none} }
+.ed-img-btn{display:block;margin:12px auto 0}
+/* pegangan jangan menutupi huruf pertama blok teks */
+.app.editing .blk-text .p{padding-left:22px}

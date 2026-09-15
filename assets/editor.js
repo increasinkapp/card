@@ -22,7 +22,7 @@
   var busy = false;
   var suppressUntil = 0;
 
-  var CHILD = { text: '.chip', ml: 'li', fact: '.fact', fixed: 'button' };
+  var CHILD = { text: '.chip', ml: 'li', fact: '.fact', fixed: 'button', block: '.blk' };
 
   var EYE_ON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M1.8 12S5.6 5.5 12 5.5 22.2 12 22.2 12 18.4 18.5 12 18.5 1.8 12 1.8 12z"/><circle cx="12" cy="12" r="3.2"/></svg>';
   var EYE_OFF = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 4l16 16M9.9 5.9A9.6 9.6 0 0 1 12 5.5c6.4 0 10.2 6.5 10.2 6.5a18 18 0 0 1-3.5 4.2M6.5 7.8A17.6 17.6 0 0 0 1.8 12S5.6 18.5 12 18.5c1.2 0 2.3-.2 3.3-.6"/></svg>';
@@ -310,6 +310,8 @@
     var bar = document.createElement('div');
     bar.className = 'ed-bar';
     bar.innerHTML =
+      (cur.key !== 'cover'
+        ? '<button class="ed-fab" data-a="add" aria-label="' + T('Tambah blok', 'Add block') + '">+</button>' : '') +
       '<div class="ed-nav">' +
       '<button class="ed-ico" data-a="prev"' + (i <= 0 ? ' disabled' : '') + ' aria-label="' + T('Sebelumnya', 'Previous') + '">&lsaquo;</button>' +
       '<span class="ed-cur">' + esc(name) + (cur.off ? ' · ' + T('disembunyikan', 'hidden') : '') + '</span>' +
@@ -329,6 +331,8 @@
       else if (a === 'order') openOrder();
       else if (a === 'done') askDone();
       else if (a === 'pub') publish();
+      else if (a === 'add') toggleMenu(bar);
+      else if (a.indexOf('add-') === 0) { closeMenu(); addBlock(a.slice(4)); }
     });
     return bar;
   }
@@ -517,6 +521,13 @@
       Array.prototype.forEach.call(box.querySelectorAll(sel), function (child, i) {
         child.style.setProperty('--i', i);
         if (kind === 'fixed') return;
+        if (kind === 'block') {
+          var g = document.createElement('span');
+          g.className = 'ed-grip-h';
+          g.setAttribute('contenteditable', 'false');
+          g.setAttribute('aria-hidden', 'true');
+          child.appendChild(g);
+        }
         var x = document.createElement('button');
         x.className = 'ed-x';
         x.setAttribute('contenteditable', 'false');
@@ -532,7 +543,8 @@
         child.appendChild(x);
       });
 
-      if (kind !== 'fixed') {
+      // blok ditambah lewat tombol + melayang, bukan tombol Tambah di tempat
+      if (kind !== 'fixed' && kind !== 'block') {
         var add = document.createElement('button');
         add.className = 'ed-add';
         add.textContent = '+ ' + T('Tambah', 'Add');
@@ -552,7 +564,7 @@
         pset(BC.data(), path, order.map(function (i) { return src[i]; }));
         saveDraft();
         BC.render();
-      });
+      }, kind === 'block' ? '.ed-grip-h' : null);
 
       Array.prototype.forEach.call(box.querySelectorAll(sel), function (c, i) { c.dataset.idx = i; });
     });
@@ -576,6 +588,189 @@
     }
   }
 
+  /* ================= tombol + dan blok tambahan ================= */
+  var ADD_ICON = {
+    image: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="1.8"/><path d="m4 18 5-5 4 4 3-3 4 4"/></svg>',
+    text: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M5 6h14M5 11h14M5 16h9"/></svg>',
+    row: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M3 12h18M9 5v14"/></svg>'
+  };
+
+  function closeMenu() {
+    var a = app();
+    if (!a) return;
+    var m = a.querySelector('.ed-menu');
+    if (m) m.remove();
+    var f = a.querySelector('.ed-fab');
+    if (f) f.classList.remove('on');
+  }
+
+  function toggleMenu(bar) {
+    if (bar.querySelector('.ed-menu')) { closeMenu(); return; }
+    var m = document.createElement('div');
+    m.className = 'ed-menu';
+    m.setAttribute('role', 'menu');
+    m.innerHTML = [['image', T('Gambar', 'Image')], ['text', T('Teks', 'Text')], ['row', T('Kolom info', 'Info row')]]
+      .map(function (x) {
+        return '<button role="menuitem" data-a="add-' + x[0] + '">' + ADD_ICON[x[0]] + '<span>' + x[1] + '</span></button>';
+      }).join('');
+    bar.appendChild(m);
+    bar.querySelector('.ed-fab').classList.add('on');
+  }
+
+  // ketukan di luar menu menutupnya
+  document.addEventListener('pointerdown', function (e) {
+    if (!e.target.closest || e.target.closest('.ed-menu, .ed-fab')) return;
+    closeMenu();
+  }, true);
+
+  function blockList(key) {
+    var d = BC.data();
+    if (!d.blocks || typeof d.blocks !== 'object' || Array.isArray(d.blocks)) d.blocks = {};
+    if (!Array.isArray(d.blocks[key])) d.blocks[key] = [];
+    return d.blocks[key];
+  }
+
+  function addBlock(kind) {
+    var key = (BC.steps()[BC.at()] || {}).key;
+    if (!key || key === 'cover') return;
+    if (kind === 'image') {
+      chooseImage(function (url) {
+        blockList(key).push({ type: 'image', src: url, caption_id: '', caption_en: '' });
+      }, function () { reveal(key, blockList(key).length - 1, false); });
+      return;
+    }
+    blockList(key).push(kind === 'row'
+      ? { type: 'row', label_id: '', label_en: '', value_id: '', value_en: '' }
+      : { type: 'text', body_id: '', body_en: '' });
+    saveDraft();
+    BC.render();
+    reveal(key, blockList(key).length - 1, true);
+  }
+
+  /* Gulir ke blok baru. Fokus dipanggil langsung, masih di dalam gestur ketuk,
+     karena Safari iOS tidak memunculkan keyboard dari setTimeout. */
+  function reveal(key, i, focus) {
+    var box = app().querySelector('.blocks[data-arr="blocks.' + key + '"]');
+    var b = box && box.querySelectorAll('.blk')[i];
+    if (!b) return;
+    var f = focus && b.querySelector('[data-e]');
+    if (f) f.focus({ preventScroll: true });
+    b.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  }
+
+  /* ---------- gambar ---------- */
+  var MAX_SIDE = 1600;
+  var MAX_UPLOAD = 4 * 1024 * 1024;   // di bawah batas body 4,5 MB function Vercel
+
+  function pickImage(cb) {
+    var inp = document.createElement('input');
+    inp.type = 'file';
+    inp.accept = 'image/*';
+    inp.style.display = 'none';
+    inp.addEventListener('change', function () {
+      var f = inp.files && inp.files[0];
+      inp.remove();
+      if (f) cb(f);
+    });
+    document.body.appendChild(inp);
+    inp.click();
+  }
+
+  /* Foto HP dikecilkan dulu di browser: sisi terpanjang 1600px, WebP, atau JPEG
+     kalau browser tidak bisa membuat WebP. GIF dan gambar yang sudah kecil dikirim apa adanya. */
+  function shrink(file) {
+    if (file.type === 'image/gif') return Promise.resolve(file);
+    return new Promise(function (ok, no) {
+      var url = URL.createObjectURL(file), im = new Image();
+      im.onload = function () {
+        URL.revokeObjectURL(url);
+        var w = im.naturalWidth, h = im.naturalHeight, k = Math.min(1, MAX_SIDE / Math.max(w, h));
+        if (k === 1 && file.size <= 900 * 1024 && /^image\/(jpeg|png|webp)$/.test(file.type)) return ok(file);
+        var c = document.createElement('canvas');
+        c.width = Math.round(w * k);
+        c.height = Math.round(h * k);
+        c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
+        c.toBlob(function (b) {
+          if (b && b.type === 'image/webp') return ok(b);
+          // JPEG tidak punya transparansi, alasnya diberi putih supaya tidak jadi hitam
+          var j = document.createElement('canvas');
+          j.width = c.width;
+          j.height = c.height;
+          var x = j.getContext('2d');
+          x.fillStyle = '#fff';
+          x.fillRect(0, 0, j.width, j.height);
+          x.drawImage(c, 0, 0);
+          j.toBlob(function (jb) {
+            jb ? ok(jb) : no(new Error(T('Gambar gagal diproses.', 'Could not process the image.')));
+          }, 'image/jpeg', 0.85);
+        }, 'image/webp', 0.85);
+      };
+      im.onerror = function () {
+        URL.revokeObjectURL(url);
+        no(new Error(T('Format gambar tidak didukung. Pakai JPG, PNG, atau WebP.', 'Unsupported image. Use JPG, PNG or WebP.')));
+      };
+      im.src = url;
+    });
+  }
+
+  function upload(blob) {
+    if (blob.size > MAX_UPLOAD) {
+      return Promise.reject(new Error(T('Gambar terlalu besar, maksimal 4 MB.', 'Image too large, 4 MB max.')));
+    }
+    return fetch(API + '/upload', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/octet-stream', 'X-Card': CARD, Authorization: 'Bearer ' + token },
+      body: blob
+    }).then(function (r) {
+      return r.json().catch(function () { return {}; }).then(function (j) {
+        if (r.ok && j.url) return j.url;
+        if (r.status === 401) logout();
+        throw new Error(j.error || T('Gagal mengunggah gambar.', 'Upload failed.'));
+      });
+    }, function () {
+      throw new Error(T('Gagal menghubungi server.', 'Cannot reach the server.'));
+    });
+  }
+
+  function chooseImage(apply, after) {
+    if (busy) return;
+    pickImage(function (file) {
+      if (busy) return;
+      busy = true;
+      var t = toast(T('Mengunggah gambar...', 'Uploading image...'), 'wait');
+      shrink(file).then(upload).then(function (url) {
+        busy = false;
+        if (t.parentNode) t.remove();
+        apply(url);
+        saveDraft();
+        BC.render();
+        if (after) after();
+      }).catch(function (err) {
+        busy = false;
+        if (t.parentNode) t.remove();
+        toast((err && err.message) || T('Gagal mengunggah gambar.', 'Upload failed.'), 'bad');
+      });
+    });
+  }
+
+  /* Tombol Ganti gambar di bawah setiap elemen yang punya data-img (foto cover,
+     foto profil, blok gambar). Nilai data-img adalah alamat field-nya. */
+  function wireMedia(root) {
+    Array.prototype.forEach.call(root.querySelectorAll('[data-img]'), function (nd) {
+      var b = document.createElement('button');
+      b.className = 'ed-add ed-img-btn';
+      b.type = 'button';
+      b.textContent = T('Ganti gambar', 'Change image');
+      b.addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var path = nd.dataset.img;
+        chooseImage(function (url) { pset(BC.data(), path, url); });
+      });
+      nd.parentNode.insertBefore(b, nd.nextSibling);
+    });
+  }
+
   /* ================= gambar ulang lapisan editor ================= */
   function paint() {
     var a = app();
@@ -586,6 +781,7 @@
     if (!unlocked || !editing) return;
     wireText(a);
     wireArrays(a);
+    wireMedia(a);
     a.appendChild(buildBar());
   }
 

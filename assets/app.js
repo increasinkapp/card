@@ -65,6 +65,40 @@
       }).join('') + '</div>';
   }
 
+  /* Blok tambahan dari tombol + di editor: kolom info, teks, gambar.
+     Tampil di akhir step, atau di titik <!--blocks--> kalau view menyediakannya.
+     Saat menyunting semua blok selalu digambar supaya urutan DOM sama dengan indeks data. */
+  function blocksHtml(key) {
+    var list = (D.blocks || {})[key];
+    list = Array.isArray(list) ? list : [];
+    var on = editing();
+    if (!list.length && !on) return '';
+    var p = 'blocks.' + key;
+    var html = list.map(function (b, i) {
+      var bp = p + '.' + i;
+      b = b || {};
+      if (b.type === 'row') {
+        if (!on && !has(L(b, 'label')) && !has(L(b, 'value'))) return '';
+        return '<div class="blk blk-row meta"><div class="meta-row">' +
+          '<div class="meta-k"' + ed(lp(bp, 'label')) + '>' + esc(L(b, 'label')) + '</div>' +
+          '<div class="meta-v"' + ed(lp(bp, 'value')) + '>' + esc(L(b, 'value')) + '</div></div></div>';
+      }
+      if (b.type === 'text') {
+        if (!on && !has(L(b, 'body'))) return '';
+        return '<div class="blk blk-text"><p class="p"' + ed(lp(bp, 'body')) + '>' + esc(L(b, 'body')) + '</p></div>';
+      }
+      if (b.type === 'image' && has(b.src)) {
+        var cap = L(b, 'caption');
+        return '<figure class="blk blk-img"><img src="' + esc(b.src) + '" alt="' + esc(cap) + '" loading="lazy" data-img="' + bp + '.src">' +
+          (has(cap) || on ? '<figcaption class="blk-cap"' + ed(lp(bp, 'caption')) + '>' + esc(cap) + '</figcaption>' : '') +
+          '</figure>';
+      }
+      return on ? '<div class="blk"></div>' : '';
+    }).join('');
+    if (!html && !on) return '';
+    return '<div class="blocks"' + (on ? ' data-arr="' + p + '" data-kind="block"' : '') + '>' + html + '</div>';
+  }
+
   /* ---------- step definitions ---------- */
   var STEP_DEF = {
     intro:    { dark: false, icon: 'person', tab: ['Kenalan', 'About'],     label: ['Perkenalan', 'Introduction'] },
@@ -110,7 +144,7 @@
       ? '<img class="ring-img" src="' + esc(img) + '" alt="' + esc(hero.name) + '">'
       : '<span class="ring-ini">' + esc(hero.initials || '') + '</span>';
     return '<div class="cover">' +
-      '<div class="ring">' + inner + '</div>' +
+      '<div class="ring" data-img="images.cover">' + inner + '</div>' +
       '<div class="cover-kicker"' + ed(lp('hero', 'connector')) + '>' + esc(L(hero, 'connector')) + '</div>' +
       '<h1 class="cover-name"' + ed('hero.name') + '>' + esc(hero.name || '') + '</h1>' +
       '<p class="cover-role"' + ed(lp('hero', 'role')) + '>' + esc(L(hero, 'role')) + '</p>' +
@@ -122,8 +156,8 @@
   view.intro = function () {
     var hero = D.hero || {}, img = (D.images || {}).hero;
     var p = has(img)
-      ? '<div class="portrait" style="background-image:url(' + esc(img) + ')"></div>'
-      : '<div class="portrait"><span class="portrait-ini">' + esc(hero.initials || '') + '</span></div>';
+      ? '<div class="portrait" data-img="images.hero" style="background-image:url(' + esc(img) + ')"></div>'
+      : '<div class="portrait" data-img="images.hero"><span class="portrait-ini">' + esc(hero.initials || '') + '</span></div>';
     return '<div class="step">' +
       p +
       '<h2 class="name"' + ed('hero.name') + '>' + esc(hero.name || '') + '</h2>' +
@@ -150,7 +184,7 @@
         ? ' <span style="color:var(--dm)">est. <span' + ed('bisnis.sejak') + '>' + esc(biz.sejak) + '</span></span>' : ''),
       '');
     return '<div class="step">' + h2(T('Keanggotaan', 'Membership')) +
-      '<div class="meta">' + rows + '</div>' + chips(b.status, 'bni.status') +
+      '<div class="meta">' + rows + '</div><!--blocks-->' + chips(b.status, 'bni.status') +
       (has(L(biz, 'layanan')) || editing()
         ? '<p class="p"' + ed(lp('bisnis', 'layanan'), 1) + '>' + L(biz, 'layanan') + '</p>' : '') +
       '</div>';
@@ -287,6 +321,13 @@
     }
 
     var body = view[s.key]();
+    if (s.key !== 'cover') {
+      // pakai fungsi pengganti, supaya "$&" di teks isian tidak dibaca sebagai pola replace
+      var bh = blocksHtml(s.key);
+      body = body.indexOf('<!--blocks-->') >= 0
+        ? body.replace('<!--blocks-->', function () { return bh; })
+        : body.replace(/<\/div>\s*$/, function () { return bh + '</div>'; });
+    }
     if (s.key !== 'cover' && step < STEPS.length - 1) {
       body = body.replace(/<\/div>\s*$/, '<button class="nextlink" id="next">' +
         T('Lanjut', 'Continue') + '<span>' + esc(T(STEPS[step + 1].tab[0], STEPS[step + 1].tab[1])) +

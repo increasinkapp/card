@@ -2,5 +2,8 @@
   "name": "increasink-biocard",
   "private": true,
   "type": "module",
-  "description": "Kartu nama digital Increasink. Situs statis plus endpoint editor di Vercel."
+  "description": "Kartu nama digital Increasink. Situs statis plus endpoint editor di Vercel.",
+  "dependencies": {
+    "@vercel/blob": "^2.8.0"
+  }
 }

@@ -9,6 +9,38 @@ const MAX_BYTES = 512 * 1024;
 
 const SEP = new RegExp('[' + String.fromCharCode(0x2028, 0x2029) + ']', 'g');   // pemisah baris yang ilegal di dalam string JS
 
+/* Gambar hanya boleh dari folder img/ kartu sendiri atau dari Vercel Blob.
+   MEDIA_ORIGINS (opsional, dipisah koma) untuk asal tambahan, dipakai dev server lokal. */
+const BLOCK_TYPES = new Set(['row', 'text', 'image']);
+const BLOB_URL = /^https:\/\/[a-z0-9]+\.public\.blob\.vercel-storage\.com\//i;
+
+function okSrc(s) {
+  s = String(s || '');
+  if (/^img\/[\w./-]+$/.test(s) && s.indexOf('..') < 0) return true;
+  if (BLOB_URL.test(s)) return true;
+  return String(process.env.MEDIA_ORIGINS || '').split(',')
+    .map((o) => o.trim()).filter(Boolean)
+    .some((o) => s.startsWith(o + '/'));
+}
+
+function checkMedia(data) {
+  const imgs = data.images || {};
+  for (const k of Object.keys(imgs)) {
+    if (imgs[k] && !okSrc(imgs[k])) return 'Alamat gambar tidak diizinkan (' + k + ').';
+  }
+  if (data.blocks == null) return null;
+  if (typeof data.blocks !== 'object' || Array.isArray(data.blocks)) return 'Blok tidak valid.';
+  for (const key of Object.keys(data.blocks)) {
+    const list = data.blocks[key];
+    if (!Array.isArray(list)) return 'Blok tidak valid.';
+    for (const b of list) {
+      if (!b || typeof b !== 'object' || !BLOCK_TYPES.has(b.type)) return 'Jenis blok tidak dikenal.';
+      if (b.type === 'image' && !okSrc(b.src)) return 'Alamat gambar tidak diizinkan.';
+    }
+  }
+  return null;
+}
+
 function toDataJs(card, data) {
   // JSON.stringify aman, tapi "</script>" di dalam sebuah string bisa menutup
   // tag lebih awal saat file dimuat sebagai <script>. Escape kurung siku dan
@@ -48,6 +80,8 @@ export default async function handler(req, res) {
   if (!data || typeof data !== 'object' || Array.isArray(data)) {
     return res.status(400).json({ error: 'Data kartu tidak valid.' });
   }
+  const bad = checkMedia(data);
+  if (bad) return res.status(400).json({ error: bad });
 
   const file = toDataJs(card, data);
   if (Buffer.byteLength(file, 'utf8') > MAX_BYTES) {

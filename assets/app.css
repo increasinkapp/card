@@ -264,6 +264,27 @@ body::after{
 .meta-k{font-size:14px;line-height:1.42859;letter-spacing:-.016em;color:var(--dm)}
 .meta-v{font-size:16px;line-height:1.4375;letter-spacing:-.02em;color:var(--ink)}
 
+/* ---------- blok tambahan dari editor ---------- */
+.blocks{display:flex;flex-direction:column;gap:14px;margin-top:24px}
+.blk{position:relative}
+.blk-row.meta{margin-top:0}
+/* kolom info yang berurutan menyambung jadi satu tabel */
+.blk-row + .blk-row{margin-top:-14px;border-top:1px solid var(--line);border-top-left-radius:0;border-top-right-radius:0}
+.blk-row:has(+ .blk-row){border-bottom:none;border-bottom-left-radius:0;border-bottom-right-radius:0}
+/* di Keanggotaan, kolom info pertama menyambung ke tabel Chapter dan kawan-kawan */
+.meta + .blocks:has(> .blk-row:first-child){margin-top:0}
+.meta + .blocks > .blk-row:first-child{border-top:1px solid var(--line);border-top-left-radius:0;border-top-right-radius:0}
+.meta:has(+ .blocks > .blk-row:first-child){border-bottom:none;border-bottom-left-radius:0;border-bottom-right-radius:0}
+.blk-text .p{margin-top:0}
+.blk-img{margin:0}
+.blk-img img{
+  display:block;width:100%;height:auto;border-radius:var(--r);
+  border:1px solid rgba(255,255,255,.6);
+  box-shadow:0 2px 10px rgba(0,0,0,.05),0 22px 50px rgba(0,0,0,.12);
+}
+.blk-cap{margin-top:10px;font-size:14px;line-height:1.42859;letter-spacing:-.016em;color:var(--dm);text-align:center}
+.dark .blk-cap{color:var(--cream-dm)}
+
 /* ---------- lists, chips ---------- */
 .list{margin-top:18px;display:flex;flex-direction:column;gap:14px}
 .list li{list-style:none;display:grid;grid-template-columns:6px 1fr;gap:14px;font-size:16px;line-height:1.5;letter-spacing:-.02em;color:var(--mu)}
