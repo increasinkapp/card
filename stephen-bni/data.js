@@ -5,7 +5,8 @@ var DATA = {
   "images": {
     "cover": "img/stephen.png",
     "hero": "img/stephen.png",
-    "bni": "img/bni.png"
+    "bni": "img/bni.png",
+    "logo": "img/increasink.png"
   },
   "contact": {
     "wa": "62817714647",
@@ -37,7 +38,7 @@ var DATA = {
   "bisnis": {
     "nama": "Increasink",
     "legal": "",
-    "sejak": "2012",
+    "sejak": "",
     "layanan_id": "Branding dan digital creative agency. Kami bantu bisnis mengomunikasikan value-nya lewat brand strategy, identitas visual, social media, dan storytelling.",
     "layanan_en": "Branding and digital creative agency. We help businesses communicate their value through brand strategy, visual identity, social media, and storytelling."
   },
@@ -173,8 +174,8 @@ var DATA = {
     ]
   },
   "wa_form": {
-    "head_id": "Senang bertemu Anda.",
-    "head_en": "Nice to meet you.",
+    "head_id": "Let's Connect",
+    "head_en": "Let's Connect",
     "sub_id": "Isi sebentar, langsung masuk ke WhatsApp saya.",
     "sub_en": "Fill this in and it goes straight to my WhatsApp.",
     "fields": [
@@ -186,22 +187,29 @@ var DATA = {
         "required": true
       },
       {
+        "key": "brand",
+        "label_id": "Brand Usaha",
+        "label_en": "Business Brand",
+        "autocomplete": "organization",
+        "required": true
+      },
+      {
         "key": "chapter",
         "label_id": "BNI Chapter",
         "label_en": "BNI Chapter",
         "autocomplete": "off",
-        "required": false
+        "required": true
       },
       {
         "key": "class",
         "label_id": "Klasifikasi Bisnis",
         "label_en": "Business Classification",
         "autocomplete": "off",
-        "required": false
+        "required": true
       }
     ],
-    "template_id": "Halo Pak Stephen, saya baru lihat Bio GAINS Anda dan ingin terhubung.\n\nNama: {name}\nBNI Chapter: {chapter}\nKlasifikasi Bisnis: {class}",
-    "template_en": "Hi Stephen, I just saw your Bio GAINS and would love to connect.\n\nName: {name}\nBNI Chapter: {chapter}\nBusiness Classification: {class}"
+    "template_id": "Halo Pak Stephen, saya baru lihat Bio GAINS Anda dan ingin terhubung.\n\nNama: {name}\nBrand Usaha: {brand}\nBNI Chapter: {chapter}\nKlasifikasi Bisnis: {class}",
+    "template_en": "Hi Stephen, I just saw your Bio GAINS and would love to connect.\n\nName: {name}\nBusiness Brand: {brand}\nBNI Chapter: {chapter}\nBusiness Classification: {class}"
   },
   "order": {
     "steps": [

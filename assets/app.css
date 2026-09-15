@@ -157,14 +157,14 @@ body::after{
 /* ---------- teks ---------- */
 /* Judul besar memakai tracking ketat ala headline Apple, plus kilau gradient pelan. */
 .h2{margin:0}
-.h2t,.cover-name,.name,.tier-name,.box-h{
+.h2t,.cover-name,.name,.box-h{
   background:linear-gradient(100deg,#1D1D1F 0%,#3C3C63 26%,#1D1D1F 52%,#4A3C63 78%,#1D1D1F 100%);
   background-size:260% 100%;
   -webkit-background-clip:text;background-clip:text;
   color:transparent;-webkit-text-fill-color:transparent;
   animation:sheen 14s linear infinite;
 }
-.dark .h2t,.dark .name,.dark .box-h{
+.dark .h2t,.dark .name{
   background:linear-gradient(100deg,#F5F5F7 0%,#8FA6FF 28%,#F5F5F7 54%,#F29BC6 80%,#F5F5F7 100%);
   background-size:260% 100%;-webkit-background-clip:text;background-clip:text;
 }
@@ -362,7 +362,6 @@ body::after{
   opacity:.88;
 }
 .slab:hover{--lift:12px}
-.slab.on{--lift:34px;opacity:1}
 .slab .top,.slab .bot{position:absolute;inset:0;border-radius:50%;display:block}
 .slab .top{
   background:
@@ -372,18 +371,16 @@ body::after{
   box-shadow:inset 0 0 0 1px rgba(255,255,255,.4);
 }
 .slab .bot{background:var(--tc);box-shadow:inset 0 0 0 300px rgba(0,0,0,.46);transform:translateZ(-17px)}
-.slab.on .top{box-shadow:inset 0 0 0 1px rgba(255,255,255,.75),0 0 22px rgba(255,255,255,.35)}
-/* Setelah satu tier dipilih, tumpukan merenggang dan lapisan lain meredup,
-   supaya lapisan paling bawah (Meat) tidak tertutup yang di atasnya. */
-.scene.picked .slab{transform:translateZ(calc(var(--i) * 46px + var(--lift,0px)))}
-.scene.picked .slab:not(.on){opacity:.3}
 .dark .scene::after{background:radial-gradient(closest-side,rgba(0,0,0,.6),rgba(0,0,0,0) 76%)}
 
 /* tombol pilih tier, segmented control kaca */
 .tiers{
   display:flex;gap:4px;padding:4px;margin:4px 0 14px;border-radius:99px;
-  background:rgba(255,255,255,.42);border:1px solid rgba(255,255,255,.66);
-  -webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);
+  position:sticky;top:10px;z-index:5;
+  /* Latar pekat tanpa backdrop-filter. Dengan backdrop-filter, Chrome membiarkan teks yang
+     di-scroll lewat di belakang bar ini tetap terbaca tembus (sudah dibuktikan lewat eksperimen). */
+  background:#F5F5FA;border:1px solid rgba(255,255,255,.66);
+  box-shadow:0 6px 20px rgba(0,0,0,.06);
 }
 .tiers button{
   flex:1;min-height:44px;display:flex;align-items:center;justify-content:center;gap:8px;
@@ -394,17 +391,28 @@ body::after{
 .tiers button::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--tc);flex:none}
 .tiers button.on{background:#fff;color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.06),0 6px 16px rgba(0,0,0,.08)}
 
-.tierview{
-  margin-top:6px;padding:26px 22px;border-radius:var(--r);
-  background:rgba(255,255,255,.46);
-  -webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);
-  border:1px solid rgba(255,255,255,.66);
-  box-shadow:0 1px 2px rgba(0,0,0,.04),0 12px 34px rgba(0,0,0,.07);
-  animation:enter .36s both;
+/* setelah dipilih: lingkaran datar berurutan, berputar dari posisi tumpukan 3D */
+.tflats{display:flex;flex-direction:column;gap:44px;margin-top:26px}
+.tflat{text-align:center;scroll-margin-top:84px}
+.tdisc{
+  width:min(62%,220px);aspect-ratio:1/1;margin:0 auto;border-radius:50%;cursor:pointer;
+  display:grid;place-items:center;
+  background:
+    radial-gradient(75% 75% at 32% 24%,rgba(255,255,255,.62),rgba(255,255,255,0) 62%),
+    linear-gradient(150deg,rgba(255,255,255,.32),rgba(0,0,0,.14)),
+    var(--tc);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.45),inset 0 -12px 22px rgba(0,0,0,.16),0 20px 44px rgba(0,0,0,.16);
+  animation:tflip .9s cubic-bezier(.2,.8,.25,1) both;animation-delay:calc(var(--d) * .1s);
 }
-.tier-name{display:block;font-family:var(--h);font-weight:700;font-size:30px;line-height:1.0;letter-spacing:-.038em}
-.tier-lvl{font-size:14px;line-height:1.42859;letter-spacing:-.016em;color:var(--dm);margin-top:6px}
-.tier-body{margin-top:14px;font-size:17px;line-height:1.47059;letter-spacing:-.022em;color:var(--mu)}
+@keyframes tflip{
+  from{transform:perspective(700px) rotateX(58deg) rotateZ(-196deg) scale(.5);opacity:0}
+  55%{opacity:1}
+  to{transform:none;opacity:1}
+}
+.tdisc b{font-family:var(--h);font-weight:700;font-size:30px;letter-spacing:-.038em;color:#fff;text-shadow:0 1px 6px rgba(0,0,0,.35)}
+.tier-lvl{font-size:14px;line-height:1.42859;letter-spacing:-.016em;color:var(--dm);margin-top:18px}
+.tier-body{margin-top:8px;font-size:17px;line-height:1.47059;letter-spacing:-.022em;color:var(--mu);text-align:left}
+.tflat .tier-lvl,.tflat .tier-body{animation:enter .5s both;animation-delay:calc(var(--d) * .1s + .35s)}
 
 /* ---------- off the record ---------- */
 .facts{
@@ -534,10 +542,15 @@ body::after{
 .fld input:focus{border-color:var(--ink)}
 .err{margin-top:10px;font-size:14px;color:#D70015;display:none}
 .err.show{display:block}
+.fld input.miss{border-color:#D70015}
+.box-logo{display:block;height:34px;width:auto;margin-bottom:18px}
+/* kotak modal selalu terang, jangan ikut warna step Kontak yang gelap */
+.dark .box .btn{background:var(--ink);color:var(--paper)}
+.dark .box .skip{color:var(--mu)}
 
 /* ---------- kaca: kilau yang bergerak dan reaksi saat ditekan ---------- */
-.quote,.meta,.acc-i,.tierview,.facts,.contact,.cover-meta{position:relative}
-.quote::after,.meta::after,.acc-i::after,.tierview::after,.facts::after,.contact::after,.cover-meta::after{
+.quote,.meta,.acc-i,.facts,.contact,.cover-meta{position:relative}
+.quote::after,.meta::after,.acc-i::after,.facts::after,.contact::after,.cover-meta::after{
   content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;
   background:linear-gradient(114deg,
     rgba(255,255,255,0) 34%,
@@ -556,10 +569,10 @@ body::after{
   26%,100%{background-position:-100% 0}
 }
 /* tekan: kaca menekuk sedikit lalu memantul, seperti panel Apple */
-.quote,.meta,.acc-i,.tierview,.facts{
+.quote,.meta,.acc-i,.facts{
   transition:transform .34s cubic-bezier(.3,1.4,.4,1),background .3s ease,box-shadow .3s ease;
 }
-.acc-i:active,.quote:active,.tierview:active{transform:scale(.985)}
+.acc-i:active,.quote:active{transform:scale(.985)}
 .acc-i:active{background:rgba(255,255,255,.7)}
 .dark .quote::after,.dark .contact::after{opacity:.16}
 
@@ -611,6 +624,14 @@ body::after{
 }
 .dark .wa-av{border-color:rgba(0,0,0,.6)}
 
+/* ---------- tombol Instagram bulat di samping WhatsApp, gaya kilau yang sama ---------- */
+.cta{display:flex;gap:10px}
+.cta .wabtn{flex:1;min-width:0}
+.cta .igbtn{flex:none;width:55px;height:55px;padding:0;text-decoration:none}
+.cta .igbtn svg{width:23px;height:23px}
+.igbtn::before{animation-delay:-1.9s}
+.igbtn::after{animation-delay:.7s}
+
 /* ---------- nama tiap lapisan, dikembalikan tegak lurus layar ---------- */
 .slab .nm{
   position:absolute;left:50%;top:50%;white-space:nowrap;
@@ -623,7 +644,6 @@ body::after{
   transition:transform .55s cubic-bezier(.3,.9,.3,1),opacity .3s ease;
   opacity:.92;
 }
-.slab.on .nm{opacity:1;font-size:19px}
 .pick{
   margin-top:2px;text-align:center;font-size:14px;line-height:1.42859;letter-spacing:-.016em;
   color:var(--dm);animation:blink 2.6s ease-in-out infinite;

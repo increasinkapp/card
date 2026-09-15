@@ -232,33 +232,36 @@
 
   /* Tumpukan 3D cuma ilustrasi. Pilihan tier lewat tombol di bawahnya,
      karena lapisan 3D terlalu kecil untuk diketuk jari. */
+  /* Sebelum memilih: tumpukan 3D sebagai ilustrasi. Setelah memilih: tumpukan berputar
+     jadi lingkaran datar berurutan ke bawah, tiap lingkaran langsung diikuti deskripsinya. */
   view.refer = function () {
-    var r = D.refer || {}, t = (r.tiers || [])[tier] || {};
-    var stack = (r.tiers || []).length;
-    var slabs = (r.tiers || []).map(function (x, i) {
-      return '<div class="slab' + (i === tier ? ' on' : '') + '" data-tier="' + i + '" aria-hidden="true"' +
-        ' style="--tc:' + esc(x.color || '#8E8E93') + ';--i:' + (stack - 1 - i) + '">' +
-        '<span class="bot"></span><span class="top"></span>' +
-        '<b class="nm">' + esc(x.name || '') + '</b></div>';
-    }).join('');
-    var btns = (r.tiers || []).map(function (x, i) {
+    var r = D.refer || {}, list = r.tiers || [];
+    var btns = list.map(function (x, i) {
       return '<button data-tier="' + i + '" class="' + (i === tier ? 'on' : '') + '" aria-pressed="' + (i === tier) + '"' +
         ' style="--tc:' + esc(x.color || '#8E8E93') + '">' + esc(x.name || '') + '</button>';
     }).join('');
     var head = '<div class="step">' + h2(L(r, 'title'), lp('refer', 'title')) +
       (has(L(r, 'intro')) || editing()
-        ? '<p class="p"' + ed(lp('refer', 'intro')) + '>' + esc(L(r, 'intro')) + '</p>' : '') +
-      '<div class="burger" id="burger"><div class="scene' + (tier >= 0 ? ' picked' : '') + '">' + slabs + '</div></div>' +
-      '<div class="tiers" id="tiernav" data-arr="refer.tiers" data-kind="fixed">' + btns + '</div>';
+        ? '<p class="p"' + ed(lp('refer', 'intro')) + '>' + esc(L(r, 'intro')) + '</p>' : '');
+    var nav = '<div class="tiers" id="tiernav" data-arr="refer.tiers" data-kind="fixed">' + btns + '</div>';
     if (tier < 0) {
-      return head + '<p class="pick">' + T('Pilih salah satu lapisan.', 'Pick one of the layers.') + '</p></div>';
+      var slabs = list.map(function (x, i) {
+        return '<div class="slab" data-tier="' + i + '" aria-hidden="true"' +
+          ' style="--tc:' + esc(x.color || '#8E8E93') + ';--i:' + (list.length - 1 - i) + '">' +
+          '<span class="bot"></span><span class="top"></span>' +
+          '<b class="nm">' + esc(x.name || '') + '</b></div>';
+      }).join('');
+      return head + '<div class="burger" id="burger"><div class="scene">' + slabs + '</div></div>' + nav +
+        '<p class="pick">' + T('Pilih salah satu lapisan.', 'Pick one of the layers.') + '</p></div>';
     }
-    var tp = 'refer.tiers.' + tier;
-    return head +
-      '<div class="tierview" style="--tc:' + esc(t.color || '#B0893C') + '">' +
-      '<div class="tier-name"' + ed(tp + '.name') + '>' + esc(t.name || '') + '</div>' +
-      '<div class="tier-lvl"' + ed(lp(tp, 'level')) + '>' + esc(L(t, 'level')) + '</div>' +
-      '<p class="tier-body"' + ed(lp(tp, 'body')) + '>' + esc(L(t, 'body')) + '</p></div></div>';
+    var flats = list.map(function (x, i) {
+      var tp = 'refer.tiers.' + i;
+      return '<div class="tflat" id="tier' + i + '" data-i="' + i + '" style="--tc:' + esc(x.color || '#8E8E93') + ';--d:' + i + '">' +
+        '<div class="tdisc" data-tier="' + i + '"><b' + ed(tp + '.name') + '>' + esc(x.name || '') + '</b></div>' +
+        '<div class="tier-lvl"' + ed(lp(tp, 'level')) + '>' + esc(L(x, 'level')) + '</div>' +
+        '<p class="tier-body"' + ed(lp(tp, 'body')) + '>' + esc(L(x, 'body')) + '</p></div>';
+    }).join('');
+    return head + nav + '<div class="tflats" id="tflats">' + flats + '</div></div>';
   };
 
   view.connect = function () {
@@ -312,10 +315,13 @@
           (i === step ? ' aria-current="page"' : '') + '>' + tabIcon(x) +
           '<b>' + esc(T(x.tab[0], x.tab[1])) + '</b></button>';
       }).join('');
-      var av = (D.images || {}).hero;
-      footer = '<div class="foot">' +
+      var av = (D.images || {}).hero, ig = (D.contact || {}).ig;
+      footer = '<div class="foot"><div class="cta">' +
         '<button class="btn wabtn" id="wa">' + svg('wa') + T('Chat WhatsApp', 'Chat on WhatsApp') +
         (has(av) ? '<span class="wa-av"><img src="' + esc(av) + '" alt=""></span>' : '') + '</button>' +
+        (has(ig) ? '<a class="btn wabtn igbtn" href="https://instagram.com/' + esc(encodeURIComponent(ig)) +
+          '" target="_blank" rel="noopener" aria-label="Instagram @' + esc(ig) + '">' + svg('ig') + '</a>' : '') +
+        '</div>' +
         '<nav class="nav" id="nav" aria-label="' + T('Bagian kartu', 'Card sections') + '">' + tabs + '</nav>' +
         '</div>';
     }
@@ -369,13 +375,14 @@
       var x = it.querySelector('.acc-x');
       if (x) x.setAttribute('aria-expanded', String(on));
     });
-    [el('tiernav'), el('burger')].forEach(function (n) {
+    [el('tiernav'), el('burger'), el('tflats')].forEach(function (n) {
       if (n) n.addEventListener('click', function (e) {
         var b = e.target.closest('[data-tier]'); if (!b) return;
-        tier = +b.dataset.tier; render();
+        pickTier(+b.dataset.tier);
       });
     });
     if (el('burger')) tilt(el('burger'));
+    if (el('tflats')) spyTiers();
 
     if (s.key !== 'cover') swipe(el('stage'));
   }
@@ -391,6 +398,35 @@
     var st = el('stage'); if (st) st.scrollTop = 0;
   }
   function setLang(l) { if (l !== lang) { lang = l; render(); } }
+
+  /* Pilihan pertama menggambar lingkaran datar lalu menggulir ke tier itu. Pilihan
+     berikutnya cukup menggulir, supaya animasi putarnya tidak diulang. */
+  function pickTier(i) {
+    var first = tier < 0;
+    tier = i;
+    if (first) render(); else markTier();
+    var t = el('tier' + i);
+    if (t) t.scrollIntoView({ block: 'start', behavior: 'smooth' });
+  }
+  function markTier() {
+    Array.prototype.forEach.call(document.querySelectorAll('#tiernav [data-tier]'), function (b) {
+      var on = +b.dataset.tier === tier;
+      b.classList.toggle('on', on);
+      b.setAttribute('aria-pressed', String(on));
+    });
+  }
+  /* Tombol tier yang menempel di atas ikut menandai tier yang sedang dibaca. */
+  var spy = null;
+  function spyTiers() {
+    if (spy) spy.disconnect();
+    if (!window.IntersectionObserver) return;
+    spy = new IntersectionObserver(function (list) {
+      list.forEach(function (x) {
+        if (x.isIntersecting) { tier = +x.target.dataset.i; markTier(); }
+      });
+    }, { root: el('stage'), rootMargin: '-35% 0px -60% 0px' });
+    Array.prototype.forEach.call(document.querySelectorAll('.tflat'), function (n) { spy.observe(n); });
+  }
 
   /* Tumpukan burger ikut miring mengikuti jari, lalu kembali ke posisi diam. */
   function tilt(node) {
@@ -481,10 +517,12 @@
       return '<div class="fld"><label for="f_' + esc(fd.key) + '">' + esc(L(fd, 'label')) + '</label>' +
         '<input id="f_' + esc(fd.key) + '" autocomplete="' + esc(fd.autocomplete || 'off') + '"></div>';
     }).join('');
+    var logo = (D.images || {}).logo;
     m.innerHTML = '<div class="box" role="dialog" aria-modal="true">' +
+      (has(logo) ? '<img class="box-logo" src="' + esc(logo) + '" alt="Increasink">' : '') +
       '<div class="box-h">' + esc(L(f, 'head')) + '</div>' +
       '<p class="box-s">' + esc(L(f, 'sub')) + '</p>' + fields +
-      '<div class="err" id="waerr">' + T('Nama wajib diisi.', 'Please fill in your name.') + '</div>' +
+      '<div class="err" id="waerr">' + T('Semua kolom wajib diisi.', 'Please fill in every field.') + '</div>' +
       '<button class="btn" id="wasend" style="margin-top:20px">' + svg('wa') + T('Kirim ke WhatsApp', 'Send to WhatsApp') + '</button>' +
       '<button class="skip" id="wacancel" style="width:100%;margin-top:8px">' + T('Batal', 'Cancel') + '</button></div>';
     m.classList.add('show');
@@ -496,13 +534,19 @@
   }
 
   function waSend() {
-    var f = D.wa_form || {}, c = D.contact || {}, vals = {}, missing = false;
+    var f = D.wa_form || {}, c = D.contact || {}, vals = {}, firstMiss = null;
     (f.fields || []).forEach(function (fd) {
       var i = el('f_' + fd.key);
       vals[fd.key] = i ? i.value.trim() : '';
-      if (fd.required && !vals[fd.key]) missing = true;
+      var miss = !!fd.required && !vals[fd.key];
+      if (i) i.classList.toggle('miss', miss);
+      if (miss && !firstMiss) firstMiss = i || true;
     });
-    if (missing) { el('waerr').classList.add('show'); return; }
+    if (firstMiss) {
+      el('waerr').classList.add('show');
+      if (firstMiss.focus) firstMiss.focus();
+      return;
+    }
     var msg = L(f, 'template').replace(/\{(\w+)\}/g, function (_, k) {
       return has(vals[k]) ? vals[k] : T('(tidak diisi)', '(not filled)');
     });
