@@ -53,7 +53,7 @@ var DATA = {
     "peran_id": "Leadership Team, BNI Magnify, Education Coord",
     "peran_en": "Leadership Team, BNI Magnify",
     "since_id": "2022",
-    "since_en": "",
+    "since_en": "2022",
     "status": []
   },
   "bisnis": {
