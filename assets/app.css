@@ -375,8 +375,7 @@ body::after{
 
 /* tombol pilih tier, segmented control kaca */
 .tiers{
-  display:flex;gap:4px;padding:4px;margin:4px 0 14px;border-radius:99px;
-  position:sticky;top:10px;z-index:5;
+  flex:1;min-width:0;display:flex;gap:4px;padding:4px;border-radius:99px;
   /* Latar pekat tanpa backdrop-filter. Dengan backdrop-filter, Chrome membiarkan teks yang
      di-scroll lewat di belakang bar ini tetap terbaca tembus (sudah dibuktikan lewat eksperimen). */
   background:#F5F5FA;border:1px solid rgba(255,255,255,.66);
@@ -388,31 +387,65 @@ body::after{
   font-family:var(--h);font-size:15px;font-weight:600;letter-spacing:-.016em;color:var(--mu);
   transition:background .25s,color .25s,box-shadow .25s;
 }
-.tiers button::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--tc);flex:none}
+/* bar tier + tombol kembali ke 3D, menempel bersama saat di-scroll */
+.tierbar{position:sticky;top:10px;z-index:5;display:flex;gap:8px;align-items:center;margin:4px 0 14px}
+.tiers button{gap:7px}
+.tback{
+  flex:none;width:54px;height:54px;border-radius:50%;cursor:pointer;display:grid;place-items:center;
+  background:#F5F5FA;border:1px solid rgba(255,255,255,.66);box-shadow:0 6px 20px rgba(0,0,0,.06);
+}
+.tback:active{transform:scale(.94)}
+/* ikon burger 4 garis: roti atas, cheese, meat, roti bawah */
+.tico{display:inline-flex;flex-direction:column;gap:2px;width:17px;flex:none}
+.tico i{display:block;height:3px;border-radius:2px;background:rgba(0,0,0,.16);transition:background .25s}
+.tico i:first-child{height:4px;border-radius:8px 8px 2px 2px}
+.tico i:last-child{height:4px;border-radius:2px 2px 8px 8px}
+.tico.t0 i:first-child,.tico.t0 i:last-child,.tico.t1 i:nth-child(2),.tico.t2 i:nth-child(3){background:var(--tc)}
+.tico.tall{width:21px;gap:2.5px}
+.tico.tall i:first-child,.tico.tall i:last-child{background:var(--c0)}
+.tico.tall i:nth-child(2){background:var(--c1)}
+.tico.tall i:nth-child(3){background:var(--c2)}
 .tiers button.on{background:#fff;color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.06),0 6px 16px rgba(0,0,0,.08)}
 
-/* setelah dipilih: lingkaran datar berurutan, berputar dari posisi tumpukan 3D */
+/* setelah dipilih: hanya tier yang disorot (.on) yang datar, sisanya lingkaran 3D miring
+   seperti lapisan tumpukan. Ukuran kotaknya sama di dua keadaan, supaya scroll tidak melompat. */
 .tflats{display:flex;flex-direction:column;gap:44px;margin-top:26px}
-.tflat{text-align:center;scroll-margin-top:84px}
+.tflat{text-align:center;scroll-margin-top:84px;perspective:900px}
 .tdisc{
-  width:min(62%,220px);aspect-ratio:1/1;margin:0 auto;border-radius:50%;cursor:pointer;
-  display:grid;place-items:center;
+  position:relative;width:min(62%,220px);aspect-ratio:1/1;margin:0 auto;border-radius:50%;cursor:pointer;
+  display:grid;place-items:center;transform-style:preserve-3d;
   background:
     radial-gradient(75% 75% at 32% 24%,rgba(255,255,255,.62),rgba(255,255,255,0) 62%),
     linear-gradient(150deg,rgba(255,255,255,.32),rgba(0,0,0,.14)),
     var(--tc);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.45),inset 0 -12px 22px rgba(0,0,0,.16);
+  transform:rotateX(58deg) rotateZ(-16deg) scale(.8);
+  transition:transform .8s cubic-bezier(.3,.9,.3,1),box-shadow .5s ease;
+}
+/* sisi tebal lapisan, sama seperti .slab .bot */
+.tdisc::before{
+  content:"";position:absolute;inset:0;border-radius:50%;
+  background:var(--tc);box-shadow:inset 0 0 0 300px rgba(0,0,0,.46);transform:translateZ(-17px);
+}
+.tflat.on .tdisc{
+  transform:none;
   box-shadow:inset 0 0 0 1px rgba(255,255,255,.45),inset 0 -12px 22px rgba(0,0,0,.16),0 20px 44px rgba(0,0,0,.16);
-  animation:tflip .9s cubic-bezier(.2,.8,.25,1) both;animation-delay:calc(var(--d) * .1s);
 }
-@keyframes tflip{
-  from{transform:perspective(700px) rotateX(58deg) rotateZ(-196deg) scale(.5);opacity:0}
-  55%{opacity:1}
-  to{transform:none;opacity:1}
+/* nama dikembalikan tegak lurus layar saat miring, sama seperti .slab .nm */
+.tdisc b{
+  display:inline-block;font-family:var(--h);font-weight:700;font-size:30px;letter-spacing:-.038em;
+  color:#fff;text-shadow:0 1px 6px rgba(0,0,0,.35);
+  transform:rotateZ(16deg) rotateX(-58deg);transition:transform .8s cubic-bezier(.3,.9,.3,1);
 }
-.tdisc b{font-family:var(--h);font-weight:700;font-size:30px;letter-spacing:-.038em;color:#fff;text-shadow:0 1px 6px rgba(0,0,0,.35)}
+.tflat.on .tdisc b{transform:none}
 .tier-lvl{font-size:14px;line-height:1.42859;letter-spacing:-.016em;color:var(--dm);margin-top:18px}
 .tier-body{margin-top:8px;font-size:17px;line-height:1.47059;letter-spacing:-.022em;color:var(--mu);text-align:left}
-.tflat .tier-lvl,.tflat .tier-body{animation:enter .5s both;animation-delay:calc(var(--d) * .1s + .35s)}
+/* fill backwards, bukan both, supaya setelah animasi masuk selesai opacity redup di bawah bisa berlaku */
+.tflat .tier-lvl,.tflat .tier-body{
+  animation:enter .5s backwards;animation-delay:calc(var(--d) * .1s + .35s);
+  transition:opacity .45s ease;
+}
+.tflat:not(.on) .tier-lvl,.tflat:not(.on) .tier-body{opacity:.45}
 
 /* ---------- off the record ---------- */
 .facts{

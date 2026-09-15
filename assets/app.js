@@ -236,14 +236,23 @@
      jadi lingkaran datar berurutan ke bawah, tiap lingkaran langsung diikuti deskripsinya. */
   view.refer = function () {
     var r = D.refer || {}, list = r.tiers || [];
+    /* Ikon burger 4 garis (roti atas, cheese, meat, roti bawah). Tier 0 menyalakan
+       dua garis roti, tier 1 garis kedua, tier 2 garis ketiga. */
+    var lines = '<i></i><i></i><i></i><i></i>';
     var btns = list.map(function (x, i) {
       return '<button data-tier="' + i + '" class="' + (i === tier ? 'on' : '') + '" aria-pressed="' + (i === tier) + '"' +
-        ' style="--tc:' + esc(x.color || '#8E8E93') + '">' + esc(x.name || '') + '</button>';
+        ' style="--tc:' + esc(x.color || '#8E8E93') + '"><span class="tico t' + i + '" aria-hidden="true">' + lines + '</span>' +
+        esc(x.name || '') + '</button>';
     }).join('');
+    var col = function (i) { return esc((list[i] || {}).color || '#8E8E93'); };
+    var back = tier < 0 ? '' :
+      '<button class="tback" id="tback" aria-label="' + T('Kembali ke tumpukan 3D', 'Back to the 3D stack') + '">' +
+      '<span class="tico tall" aria-hidden="true" style="--c0:' + col(0) + ';--c1:' + col(1) + ';--c2:' + col(2) + '">' + lines + '</span></button>';
     var head = '<div class="step">' + h2(L(r, 'title'), lp('refer', 'title')) +
       (has(L(r, 'intro')) || editing()
         ? '<p class="p"' + ed(lp('refer', 'intro')) + '>' + esc(L(r, 'intro')) + '</p>' : '');
-    var nav = '<div class="tiers" id="tiernav" data-arr="refer.tiers" data-kind="fixed">' + btns + '</div>';
+    var nav = '<div class="tierbar">' + back +
+      '<div class="tiers" id="tiernav" data-arr="refer.tiers" data-kind="fixed">' + btns + '</div></div>';
     if (tier < 0) {
       var slabs = list.map(function (x, i) {
         return '<div class="slab" data-tier="' + i + '" aria-hidden="true"' +
@@ -256,7 +265,7 @@
     }
     var flats = list.map(function (x, i) {
       var tp = 'refer.tiers.' + i;
-      return '<div class="tflat" id="tier' + i + '" data-i="' + i + '" style="--tc:' + esc(x.color || '#8E8E93') + ';--d:' + i + '">' +
+      return '<div class="tflat' + (i === tier && !flipPending ? ' on' : '') + '" id="tier' + i + '" data-i="' + i + '" style="--tc:' + esc(x.color || '#8E8E93') + ';--d:' + i + '">' +
         '<div class="tdisc" data-tier="' + i + '"><b' + ed(tp + '.name') + '>' + esc(x.name || '') + '</b></div>' +
         '<div class="tier-lvl"' + ed(lp(tp, 'level')) + '>' + esc(L(x, 'level')) + '</div>' +
         '<p class="tier-body"' + ed(lp(tp, 'body')) + '>' + esc(L(x, 'body')) + '</p></div>';
@@ -383,6 +392,11 @@
     });
     if (el('burger')) tilt(el('burger'));
     if (el('tflats')) spyTiers();
+    if (el('tback')) el('tback').addEventListener('click', function () {
+      tier = -1;
+      if (spy) { spy.disconnect(); spy = null; }
+      render();
+    });
 
     if (s.key !== 'cover') swipe(el('stage'));
   }
@@ -399,12 +413,24 @@
   }
   function setLang(l) { if (l !== lang) { lang = l; render(); } }
 
-  /* Pilihan pertama menggambar lingkaran datar lalu menggulir ke tier itu. Pilihan
-     berikutnya cukup menggulir, supaya animasi putarnya tidak diulang. */
+  /* Hanya tier yang disorot yang datar, sisanya tetap lingkaran 3D miring.
+     Pilihan pertama menggambar semuanya 3D dulu, lalu yang dipilih berputar jadi datar.
+     Pilihan berikutnya cukup menggulir dan memindahkan sorotan. */
+  var flipPending = false;
+  var spyQuiet = 0;   // selama gulir otomatis, sorotan tidak ikut berpindah-pindah
   function pickTier(i) {
     var first = tier < 0;
     tier = i;
-    if (first) render(); else markTier();
+    spyQuiet = Date.now() + 900;
+    if (first) {
+      flipPending = true;
+      render();
+      flipPending = false;
+      // dua frame, supaya lingkaran sempat tergambar 3D dan transisi ke datar kelihatan
+      requestAnimationFrame(function () { requestAnimationFrame(markTier); });
+    } else {
+      markTier();
+    }
     var t = el('tier' + i);
     if (t) t.scrollIntoView({ block: 'start', behavior: 'smooth' });
   }
@@ -414,6 +440,9 @@
       b.classList.toggle('on', on);
       b.setAttribute('aria-pressed', String(on));
     });
+    Array.prototype.forEach.call(document.querySelectorAll('.tflat'), function (n) {
+      n.classList.toggle('on', +n.dataset.i === tier);
+    });
   }
   /* Tombol tier yang menempel di atas ikut menandai tier yang sedang dibaca. */
   var spy = null;
@@ -422,7 +451,7 @@
     if (!window.IntersectionObserver) return;
     spy = new IntersectionObserver(function (list) {
       list.forEach(function (x) {
-        if (x.isIntersecting) { tier = +x.target.dataset.i; markTier(); }
+        if (x.isIntersecting && Date.now() > spyQuiet) { tier = +x.target.dataset.i; markTier(); }
       });
     }, { root: el('stage'), rootMargin: '-35% 0px -60% 0px' });
     Array.prototype.forEach.call(document.querySelectorAll('.tflat'), function (n) { spy.observe(n); });
