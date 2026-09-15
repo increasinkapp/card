@@ -47,12 +47,12 @@ var DATA = {
     "tagline_en": "Business, Brand & People: \u003cem>lessons from building, connecting and growing.\u003c/em>"
   },
   "bni": {
-    "chapter": "BNI Magnify, Titanium Chapter",
-    "klasifikasi_id": "Social Media & Design",
+    "chapter": "BNI Magnify, Titanium Chapter, North Region",
+    "klasifikasi_id": "Social Media Branding",
     "klasifikasi_en": "Social Media & Design",
     "peran_id": "Leadership Team, BNI Magnify",
     "peran_en": "Leadership Team, BNI Magnify",
-    "since_id": "",
+    "since_id": "2022",
     "since_en": "",
     "status": []
   },
