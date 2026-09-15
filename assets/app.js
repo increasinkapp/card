@@ -156,17 +156,26 @@
   };
 
   view.intro = function () {
-    var hero = D.hero || {}, im = D.images || {}, img = im.hero, vid = im.intro_video;
-    /* Video diputar otomatis dan berulang, mulai tanpa suara karena browser HP menolak
-       autoplay bersuara. Tombol speaker menyalakan suara lewat ketukan. Tombol Ganti gambar
-       tidak dipasang di sini karena yang tampil video. */
-    var p = has(vid)
-      ? '<div class="portrait"><video class="portrait-vid" src="' + esc(vid) + '"' +
-        (has(im.intro_poster) ? ' poster="' + esc(im.intro_poster) + '"' : '') +
-        ' autoplay muted loop playsinline preload="auto" aria-label="' + esc(hero.name || '') + '"></video>' +
-        '<button class="vsound" id="vsound" aria-pressed="' + introSound + '" aria-label="' +
-        (introSound ? T('Matikan suara', 'Mute') : T('Nyalakan suara', 'Unmute')) + '">' +
-        svg(introSound ? 'soundOn' : 'soundOff') + '</button></div>'
+    var hero = D.hero || {}, img = (D.images || {}).hero;
+    /* Carousel ala Instagram: video dan gambar dari data.intro_slides. Video mulai tanpa suara
+       karena browser HP menolak autoplay bersuara, tombol speaker menyalakan suara lewat ketukan.
+       Tombol Ganti gambar tidak dipasang di sini. */
+    var slides = (Array.isArray(D.intro_slides) ? D.intro_slides : []).filter(function (s) { return s && has(s.src); });
+    var hasVid = slides.some(function (s) { return s.type === 'video'; });
+    var p = slides.length
+      ? '<div class="portrait carousel" id="car" aria-roledescription="carousel">' +
+        '<div class="car-track">' + slides.map(function (s, i) {
+          return '<div class="car-slide">' + (s.type === 'video'
+            ? '<video class="car-media" src="' + esc(s.src) + '"' + (has(s.poster) ? ' poster="' + esc(s.poster) + '"' : '') +
+              ' muted playsinline preload="' + (i === 0 ? 'auto' : 'metadata') + '"' + (slides.length === 1 ? ' loop' : '') +
+              ' aria-label="' + esc(hero.name || '') + '"></video>'
+            : '<img class="car-media" src="' + esc(s.src) + '" alt="" draggable="false">') + '</div>';
+        }).join('') + '</div>' +
+        (slides.length > 1 ? '<div class="car-dots" aria-hidden="true">' +
+          slides.map(function () { return '<i></i>'; }).join('') + '</div>' : '') +
+        (hasVid ? '<button class="vsound" id="vsound" aria-pressed="' + introSound + '" aria-label="' +
+          (introSound ? T('Matikan suara', 'Mute') : T('Nyalakan suara', 'Unmute')) + '">' +
+          svg(introSound ? 'soundOn' : 'soundOff') + '</button>' : '') + '</div>'
       : has(img)
       ? '<div class="portrait" data-img="images.hero" style="background-image:url(' + esc(img) + ')"></div>'
       : '<div class="portrait" data-img="images.hero"><span class="portrait-ini">' + esc(hero.initials || '') + '</span></div>';
@@ -403,19 +412,7 @@
       });
     });
     if (el('burger')) tilt(el('burger'));
-    // atribut muted dari innerHTML kadang tidak dianggap, set lewat properti lalu putar
-    var pv = document.querySelector('.portrait-vid');
-    if (pv) {
-      pv.muted = !introSound;
-      playVid(pv);
-      var sb = el('vsound');
-      if (sb) sb.addEventListener('click', function () {
-        introSound = !introSound;
-        pv.muted = !introSound;
-        playVid(pv);
-        paintSound(sb);
-      });
-    }
+    if (el('car')) carousel(el('car'));
     if (el('tflats')) spyTiers();
     if (el('tback')) el('tback').addEventListener('click', function () {
       tier = -1;
@@ -504,6 +501,64 @@
     });
   }
 
+  /* Carousel step Kenalan. Geser jari memakai scroll-snap bawaan browser, jadi rasanya sama
+     seperti Instagram. Maju sendiri saat video selesai atau setelah 5 detik untuk gambar,
+     dan kembali ke slide pertama setelah slide terakhir. Posisi slide diingat saat render ulang. */
+  var carIndex = 0, carTimer = null;
+  var IMG_MS = 5000;
+  function carousel(box) {
+    var track = box.querySelector('.car-track');
+    var slides = Array.prototype.slice.call(track.children);
+    var dots = box.querySelectorAll('.car-dots i');
+    var sb = el('vsound');
+    var n = slides.length;
+    clearTimeout(carTimer);
+    if (carIndex > n - 1) carIndex = 0;
+
+    function media(i) { return slides[i] && slides[i].querySelector('video'); }
+    function alive() { return document.body.contains(track); }
+    function activate(i) {
+      clearTimeout(carTimer);
+      carIndex = i;
+      Array.prototype.forEach.call(dots, function (d, j) { d.classList.toggle('on', j === i); });
+      slides.forEach(function (s, j) {
+        var o = media(j);
+        if (o && j !== i && !o.paused) { o.pause(); o.currentTime = 0; }
+      });
+      var v = media(i);
+      if (sb) sb.hidden = !v;   // gambar tidak punya suara
+      if (v) { v.muted = !introSound; playVid(v); }
+      else if (n > 1) carTimer = setTimeout(function () { if (alive()) next(); }, IMG_MS);
+    }
+    function next() {
+      if (n < 2 || !alive()) return;
+      var i = (carIndex + 1) % n;
+      track.scrollTo({ left: i * track.clientWidth, behavior: 'smooth' });
+      activate(i);
+    }
+    slides.forEach(function (s, j) {
+      var v = media(j);
+      if (v) v.addEventListener('ended', function () { if (j === carIndex && alive()) next(); });
+    });
+    // slide dianggap pindah setelah geseran berhenti, bukan di tengah jalan
+    var settle = null;
+    track.addEventListener('scroll', function () {
+      clearTimeout(settle);
+      settle = setTimeout(function () {
+        var i = Math.round(track.scrollLeft / track.clientWidth);
+        if (i !== carIndex && i >= 0 && i < n) activate(i);
+      }, 90);
+    }, { passive: true });
+    if (sb) sb.addEventListener('click', function () {
+      introSound = !introSound;
+      var v = media(carIndex);
+      if (v) { v.muted = !introSound; playVid(v); }
+      paintSound(sb);
+    });
+    track.scrollLeft = carIndex * track.clientWidth;
+    activate(carIndex);
+  }
+
   /* Tumpukan burger ikut miring mengikuti jari, lalu kembali ke posisi diam. */
   function tilt(node) {
     var sc = node.querySelector('.scene');
@@ -570,6 +625,8 @@
     if (!node || editing()) return;
     var x0 = null, y0 = null;
     node.addEventListener('touchstart', function (e) {
+      // geser di carousel milik carousel, jangan ikut memindahkan step kartu
+      if (e.target.closest && e.target.closest('.carousel')) { x0 = y0 = null; return; }
       x0 = e.touches[0].clientX; y0 = e.touches[0].clientY;
     }, { passive: true });
     node.addEventListener('touchend', function (e) {

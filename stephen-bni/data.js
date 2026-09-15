@@ -6,10 +6,29 @@ var DATA = {
     "cover": "img/stephen.png",
     "hero": "img/stephen.png",
     "bni": "img/bni.png",
-    "logo": "img/increasink.png",
-    "intro_video": "img/intro.mp4",
-    "intro_poster": "img/intro-poster.jpg"
+    "logo": "img/increasink.png"
   },
+  "intro_slides": [
+    {
+      "type": "video",
+      "src": "img/intro.mp4",
+      "poster": "img/intro-poster.jpg"
+    },
+    {
+      "type": "image",
+      "src": "img/slide2.jpg"
+    },
+    {
+      "type": "video",
+      "src": "img/slide3.mp4",
+      "poster": "img/slide3-poster.jpg"
+    },
+    {
+      "type": "video",
+      "src": "img/slide4.mp4",
+      "poster": "img/slide4-poster.jpg"
+    }
+  ],
   "contact": {
     "wa": "62817714647",
     "phone_display": "+62 817 714 647",

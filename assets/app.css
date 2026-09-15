@@ -240,7 +240,23 @@ body::after{
   box-shadow:0 2px 10px rgba(0,0,0,.05),0 22px 50px rgba(0,0,0,.12);
 }
 .portrait-ini{font-family:var(--h);font-weight:600;font-size:58px;color:var(--dm)}
-.portrait-vid{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+/* carousel step Kenalan: geser horizontal dengan snap per slide, scrollbar disembunyikan */
+.car-track{
+  position:absolute;inset:0;display:flex;overflow-x:auto;overflow-y:hidden;
+  scroll-snap-type:x mandatory;overscroll-behavior-x:contain;scrollbar-width:none;
+  -webkit-overflow-scrolling:touch;
+}
+.car-track::-webkit-scrollbar{display:none}
+.car-slide{flex:0 0 100%;height:100%;position:relative;scroll-snap-align:center;scroll-snap-stop:always}
+.car-media{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;user-select:none;-webkit-user-drag:none}
+.car-dots{
+  position:absolute;left:0;right:0;bottom:16px;z-index:2;display:flex;justify-content:center;gap:6px;pointer-events:none;
+}
+.car-dots i{
+  width:6px;height:6px;border-radius:99px;background:rgba(255,255,255,.5);
+  box-shadow:0 0 4px rgba(0,0,0,.3);transition:width .3s ease,background .3s ease;
+}
+.car-dots i.on{width:18px;background:#fff}
 /* tombol speaker di pojok kanan bawah video */
 .vsound{
   position:absolute;right:12px;bottom:12px;z-index:2;width:42px;height:42px;border-radius:50%;
@@ -251,6 +267,7 @@ body::after{
 .vsound:active{transform:scale(.92)}
 .vsound[aria-pressed="true"]{background:rgba(255,255,255,.9);color:var(--ink)}
 .vsound svg{width:20px;height:20px}
+.vsound[hidden]{display:none}
 .name{display:block;font-family:var(--h);font-weight:700;font-size:clamp(34px,8.6vw,42px);letter-spacing:-.04em;margin-top:28px;line-height:.99}
 .role{margin-top:8px;font-size:17px;line-height:1.47059;letter-spacing:-.022em;color:var(--mu)}
 .quote{
