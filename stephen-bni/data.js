@@ -6,7 +6,9 @@ var DATA = {
     "cover": "img/stephen.png",
     "hero": "img/stephen.png",
     "bni": "img/bni.png",
-    "logo": "img/increasink.png"
+    "logo": "img/increasink.png",
+    "intro_video": "img/intro.mp4",
+    "intro_poster": "img/intro-poster.jpg"
   },
   "contact": {
     "wa": "62817714647",

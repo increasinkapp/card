@@ -45,6 +45,8 @@
     hand: '<path d="M9.2 11.5a3.35 3.35 0 1 0 0-6.7 3.35 3.35 0 0 0 0 6.7Z" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M2.9 19.6a6.3 6.3 0 0 1 12.6 0" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M16.3 5.3a3.35 3.35 0 0 1 0 6.4M17.6 14.3a6.3 6.3 0 0 1 3.5 5.1" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>',
     chat: '<path d="M20.4 14.3a2.3 2.3 0 0 1-2.3 2.3H8.5L4 20.6V5.9a2.3 2.3 0 0 1 2.3-2.3h11.8a2.3 2.3 0 0 1 2.3 2.3Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>'
   };
+  ICON.soundOff = '<path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="m16 9.5 5 5M21 9.5l-5 5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>';
+  ICON.soundOn = '<path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M16.5 8.8a4.6 4.6 0 0 1 0 6.4M19 6.3a8.2 8.2 0 0 1 0 11.4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>';
   function svg(n, c) { return '<svg class="' + (c || '') + '" viewBox="0 0 24 24" aria-hidden="true">' + ICON[n] + '</svg>'; }
   /* Step BNI memakai logo aslinya. Abu saat diam, warna penuh saat aktif, diatur di CSS. */
   function tabIcon(x) {
@@ -154,8 +156,18 @@
   };
 
   view.intro = function () {
-    var hero = D.hero || {}, img = (D.images || {}).hero;
-    var p = has(img)
+    var hero = D.hero || {}, im = D.images || {}, img = im.hero, vid = im.intro_video;
+    /* Video diputar otomatis dan berulang, mulai tanpa suara karena browser HP menolak
+       autoplay bersuara. Tombol speaker menyalakan suara lewat ketukan. Tombol Ganti gambar
+       tidak dipasang di sini karena yang tampil video. */
+    var p = has(vid)
+      ? '<div class="portrait"><video class="portrait-vid" src="' + esc(vid) + '"' +
+        (has(im.intro_poster) ? ' poster="' + esc(im.intro_poster) + '"' : '') +
+        ' autoplay muted loop playsinline preload="auto" aria-label="' + esc(hero.name || '') + '"></video>' +
+        '<button class="vsound" id="vsound" aria-pressed="' + introSound + '" aria-label="' +
+        (introSound ? T('Matikan suara', 'Mute') : T('Nyalakan suara', 'Unmute')) + '">' +
+        svg(introSound ? 'soundOn' : 'soundOff') + '</button></div>'
+      : has(img)
       ? '<div class="portrait" data-img="images.hero" style="background-image:url(' + esc(img) + ')"></div>'
       : '<div class="portrait" data-img="images.hero"><span class="portrait-ini">' + esc(hero.initials || '') + '</span></div>';
     return '<div class="step">' +
@@ -391,6 +403,19 @@
       });
     });
     if (el('burger')) tilt(el('burger'));
+    // atribut muted dari innerHTML kadang tidak dianggap, set lewat properti lalu putar
+    var pv = document.querySelector('.portrait-vid');
+    if (pv) {
+      pv.muted = !introSound;
+      playVid(pv);
+      var sb = el('vsound');
+      if (sb) sb.addEventListener('click', function () {
+        introSound = !introSound;
+        pv.muted = !introSound;
+        playVid(pv);
+        paintSound(sb);
+      });
+    }
     if (el('tflats')) spyTiers();
     if (el('tback')) el('tback').addEventListener('click', function () {
       tier = -1;
@@ -455,6 +480,28 @@
       });
     }, { root: el('stage'), rootMargin: '-35% 0px -60% 0px' });
     Array.prototype.forEach.call(document.querySelectorAll('.tflat'), function (n) { spy.observe(n); });
+  }
+
+  /* Suara video Kenalan. Pilihan suara diingat selama halaman terbuka; video ikut
+     hilang saat pindah step, jadi suara tidak terus berbunyi di step lain. */
+  var introSound = false;
+  function paintSound(b) {
+    b.innerHTML = svg(introSound ? 'soundOn' : 'soundOff');
+    b.setAttribute('aria-pressed', String(introSound));
+    b.setAttribute('aria-label', introSound ? T('Matikan suara', 'Mute') : T('Nyalakan suara', 'Unmute'));
+  }
+  function playVid(v) {
+    var p = v.play();
+    if (p && p.catch) p.catch(function () {
+      // browser menolak suara tanpa ketukan: lanjut tanpa suara supaya video tetap jalan
+      if (!v.muted) {
+        v.muted = true;
+        introSound = false;
+        var b = el('vsound');
+        if (b) paintSound(b);
+        v.play().catch(function () { /* poster tetap tampil */ });
+      }
+    });
   }
 
   /* Tumpukan burger ikut miring mengikuti jari, lalu kembali ke posisi diam. */
